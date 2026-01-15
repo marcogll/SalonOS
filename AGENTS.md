@@ -2,34 +2,38 @@
 
 Este documento define cómo deben usarse agentes de IA (Claude, Codex, OpenCode, Gemini) dentro del proyecto SalonOS.
 
-Ningún agente tiene autoridad de producto. Todos ejecutan bajo el PRD.
+Ningún agente tiene autoridad de producto. Todos ejecutan estrictamente bajo el PRD.
 
 ---
 
 ## Principios de Uso de Agentes
 
-* Los agentes **no deciden alcance**.
-* Los agentes **no redefinen reglas de negocio**.
-* Toda salida debe ser revisable y versionable.
-* El PRD es la única fuente de verdad funcional.
+- Los agentes no deciden alcance.
+- Los agentes no redefinen reglas de negocio.
+- Los agentes no introducen lógica no descrita en el PRD.
+- Toda salida debe ser revisable, versionable y auditable.
+- El PRD es la única fuente de verdad funcional.
 
 ---
 
-## Claude — Arquitectura & Lógica
+## Claude — Arquitectura y Lógica
 
 **Rol:** Arquitecto de sistema y reglas de negocio.
 
-**Usar para:**
+**Responsabilidades explícitas alineadas al PRD:**
+- Definir la lógica de reseteo mensual de invitaciones (día 1, idempotente, auditable).
+- Especificar manejo UTC-first y puntos válidos de conversión de zona horaria.
+- Diseñar el algoritmo de generación de Short ID con reintentos por colisión.
+- Modelar estados, transiciones y edge cases críticos.
 
-* Descomposición de lógica compleja.
-* Revisión de consistencia con el PRD.
-* Diseño de flujos y algoritmos.
-* Modelado de estados y edge cases.
+**Usar para:**
+- Descomposición de lógica compleja.
+- Validación de consistencia con el PRD.
+- Diseño de flujos y contratos lógicos.
 
 **No usar para:**
-
-* Código final sin revisión.
-* Decisiones de UX visual.
+- Código final sin revisión humana.
+- Decisiones visuales o de UX.
 
 ---
 
@@ -37,58 +41,74 @@ Ningún agente tiene autoridad de producto. Todos ejecutan bajo el PRD.
 
 **Rol:** Ingeniero de backend.
 
-**Usar para:**
+**Responsabilidades explícitas alineadas al PRD:**
+- Implementar el reseteo mensual de invitaciones mediante:
+  - Cron Job o
+  - Supabase Edge Function.
+- Garantizar que todos los timestamps persistidos estén en UTC.
+- Implementar generación de Short ID (6 caracteres) con verificación de unicidad y reintentos.
+- Registrar todos los automatismos y eventos críticos en `audit_logs`.
 
-* SQL y migraciones.
-* Funciones server-side.
-* Webhooks (Stripe, WhatsApp).
-* Integraciones API.
+**Usar para:**
+- SQL, migraciones y esquemas.
+- Funciones server-side.
+- Webhooks (Stripe, WhatsApp).
+- Integraciones API.
 
 **Reglas:**
-
-* Todo código debe respetar RLS.
-* No hardcodear secretos.
+- Todo código debe respetar RLS.
+- No hardcodear secretos.
+- No persistir horas locales bajo ninguna circunstancia.
 
 ---
 
-## OpenCode — Frontend & Integración
+## OpenCode — Frontend e Integración
 
 **Rol:** Ingeniero de interfaz y pegamento.
 
-**Usar para:**
+**Responsabilidades explícitas alineadas al PRD:**
+- Convertir timestamps desde UTC a la zona horaria definida en `locations.timezone`.
+- Nunca enviar ni persistir horas locales al backend.
+- Exponer Short ID únicamente como referencia humana, nunca como identificador primario.
 
-* Componentes Next.js.
-* Integración frontend ↔ backend.
-* Manejo de estados.
-* Formularios y flujos.
+**Usar para:**
+- Componentes Next.js.
+- Integración frontend ↔ backend.
+- Manejo de estado y formularios.
+- Flujos de agenda y visualización.
 
 **Reglas:**
-
-* No exponer datos privados.
-* Validaciones críticas en backend.
+- No exponer datos privados.
+- Validaciones críticas siempre en backend.
 
 ---
 
-## Gemini — QA & Seguridad
+## Gemini — QA y Seguridad
 
 **Rol:** Auditor técnico.
 
-**Usar para:**
+**Responsabilidades explícitas alineadas al PRD:**
+- Verificar que ningún timestamp no-UTC sea almacenado.
+- Auditar la idempotencia del reseteo mensual de invitaciones.
+- Detectar riesgos de colisión, enumeración o fuga de Short IDs.
+- Revisar cumplimiento de RLS y límites de acceso.
 
-* Revisión de RLS.
-* Detección de fugas de datos.
-* Edge cases de seguridad.
-* Validación de flujos críticos.
+**Usar para:**
+- Revisión de RLS.
+- Detección de fugas de datos.
+- Edge cases de seguridad.
+- Validación de flujos críticos.
 
 ---
 
-## Flujo de Trabajo Recomendado
+## Flujo de Trabajo Canónico
 
-1. PRD define la regla.
-2. Claude descompone la lógica.
-3. Codex implementa backend.
-4. OpenCode conecta UI.
-5. Gemini audita.
+1. El PRD define la regla.
+2. La lógica es descompuesta y formalizada.
+3. El backend implementa la regla.
+4. La interfaz conecta y presenta.
+5. Se audita y valida el cumplimiento técnico.
+
 
 ---
 

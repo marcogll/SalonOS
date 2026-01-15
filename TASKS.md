@@ -1,15 +1,14 @@
-# TASKS.md — Plan de Ejecución por Agentes
+# TASKS.md — Plan de Ejecución por Fases
 
-Este documento define las tareas ejecutables del proyecto SalonOS, descompuestas para trabajo asistido por modelos (Claude, Codex, OpenCode, Gemini) y desarrollo humano.
-
-Las tareas están alineadas estrictamente con el PRD. No se permite introducir lógica no documentada.
+Este documento define las tareas ejecutables del proyecto **SalonOS**, alineadas estrictamente con el PRD. Ninguna tarea puede introducir lógica no documentada.
 
 ---
 
 ## Convenciones
 
-* Cada tarea debe producir artefactos verificables (código, migraciones, tests, docs).
+* Cada tarea produce artefactos verificables (código, migraciones, tests, documentación).
 * Las reglas de negocio viven en backend.
+* Todo automatismo debe ser auditable.
 * Ningún agente redefine alcance.
 
 ---
@@ -20,20 +19,21 @@ Las tareas están alineadas estrictamente con el PRD. No se permite introducir l
 
 * Crear proyecto Supabase.
 * Configurar Auth (Magic Links Email/SMS).
-* Definir RLS global por rol (Admin / Manager / Staff / Customer).
+* Definir roles: Admin / Manager / Staff / Customer.
+* Configurar RLS base por rol.
 
 **Output:**
 
-* Supabase project configurado.
+* Proyecto Supabase operativo.
 * Policies iniciales documentadas.
 
 ---
 
 ### 1.2 Esquema de Base de Datos Inicial
 
-Tablas:
+Tablas obligatorias:
 
-* locations
+* locations (incluye timezone)
 * resources
 * staff
 * services
@@ -44,27 +44,30 @@ Tablas:
 
 Tareas:
 
-* Definir migraciones SQL.
+* Definir migraciones SQL versionadas.
 * Claves foráneas y constraints.
 * Campos de auditoría (`created_at`, `updated_at`).
 
 **Output:**
 
-* Migraciones versionadas.
+* Migraciones SQL.
 * Diagrama lógico.
 
 ---
 
 ### 1.3 Short ID & Invitaciones
 
-* Generador de Short ID (6 chars, collision-safe).
+* Implementar generador de Short ID (6 chars, collision-safe).
+* Validación de unicidad antes de persistir booking.
 * Generador y validación de códigos de invitación.
-* Lógica de cuotas por Tier.
+* Lógica de cuotas mensuales por Tier.
+* Reseteo automático de invitaciones el día 1 de cada mes (UTC).
 
 **Output:**
 
 * Funciones backend.
 * Tests unitarios.
+* Registros en `audit_logs`.
 
 ---
 
@@ -88,7 +91,7 @@ Tareas:
 * Validación Staff:
 
   * Horario laboral.
-  * Eventos en Google Calendar.
+  * Eventos bloqueantes en Google Calendar.
 
 * Validación Recurso:
 
@@ -99,15 +102,14 @@ Tareas:
 **Output:**
 
 * Algoritmo de disponibilidad.
-* Tests de colisión.
+* Tests de colisión y concurrencia.
 
 ---
 
 ### 2.2 Servicios Express (Dual Staff)
 
 * Búsqueda de dos colaboradoras simultáneas.
-* Bloqueo de Sillón de Pedicura.
-* Liberación de mesa secundaria.
+* Bloqueo del recurso principal requerido.
 * Aplicación automática de Premium Fee.
 
 **Output:**
@@ -120,7 +122,7 @@ Tareas:
 ### 2.3 Google Calendar Sync
 
 * Integración vía Service Account.
-* Sync bidireccional.
+* Sincronización bidireccional.
 * Manejo de conflictos.
 
 **Output:**
@@ -134,8 +136,8 @@ Tareas:
 
 ### 3.1 Stripe — Depósitos Dinámicos
 
-* Regla $200 vs 50%.
-* Asociación pago ↔ booking.
+* Regla $200 vs 50% según día.
+* Asociación pago ↔ booking (UUID interno, Short ID visible).
 
 **Output:**
 
@@ -146,7 +148,7 @@ Tareas:
 
 ### 3.2 No-Show Logic
 
-* Ventana 12h.
+* Ventana de cancelación 12h (UTC).
 * Penalización automática.
 * Override Admin.
 
@@ -162,13 +164,13 @@ Tareas:
 ### 4.1 Calendario Multi-Columna
 
 * Vista por staff.
-* Bloques de 15 min.
+* Bloques de 15 minutos.
 
 ---
 
 ### 4.2 Gestión Operativa
 
-* Recursos.
+* Recursos físicos.
 * Staff.
 * Traspaso entre sucursales.
 
@@ -176,19 +178,19 @@ Tareas:
 
 ### 4.3 The Vault
 
-* Upload fotos privadas.
+* Upload de fotos privadas.
 * Formularios técnicos.
 
 ---
 
 ## FASE 5 — Automatización y Lanzamiento
 
-* WhatsApp confirmaciones.
+* Confirmaciones por WhatsApp.
 * Recibos digitales.
-* Landing Believers.
+* Landing Page Believers.
 
 ---
 
 ## Regla Final
 
-Si una tarea no está aquí, no existe.
+Si una tarea no está aquí, no existe. Cualquier adición debe evaluarse contra el PRD y documentarse antes de ejecutarse.
