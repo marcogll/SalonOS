@@ -170,5 +170,4 @@ Este repositorio implementa esa filosofía a nivel de sistema.
 
 ---
 
-**Proyecto:
-
+**Proyecto:** soul23
