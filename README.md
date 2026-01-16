@@ -25,15 +25,17 @@ El sistema está diseñado para:
 
 Este repositorio contiene:
 
-* Frontend de cliente (The Boutique).
-* Dashboard administrativo (The HQ).
-* Lógica de negocio de agendamiento.
-* Integraciones externas (Stripe, Google Calendar, WhatsApp).
-* Esquema base de datos y políticas de seguridad.
+* **anchor23.mx** - Frontend institucional (landing page + páginas informativas)
+* **The Boutique** - Frontend de reserva para clientas (booking.anchor23.mx)
+* **The HQ** - Dashboard administrativo y CRM interno
+* **The Kiosk** - Sistema de autoservicio en pantalla táctil
+* Lógica de negocio de agendamiento y disponibilidad
+* Integraciones externas (Stripe, Google Calendar, WhatsApp)
+* Esquema base de datos y políticas de seguridad
 
 No contiene:
 
-* Material de marketing.
+* Material de marketing digital.
 * Operación manual del salón.
 * Datos productivos.
 
@@ -52,6 +54,12 @@ El PRD es la fuente de verdad funcional. El README es la guía de ejecución.
 
 ## 4. Arquitectura General
 
+### Dominios
+
+* `anchor23.mx` - Frontend institucional (landing page + páginas informativas)
+* `booking.anchor23.mx` - Frontend de reservas (The Boutique) - **Pendiente**
+* `kiosk.anchor23.mx` - Sistema de autoservicio (The Kiosk)
+
 ### Experiencias
 
 * **The Boutique**: Frontend de reserva para clientas.
@@ -63,6 +71,7 @@ El PRD es la fuente de verdad funcional. El README es la guía de ejecución.
 * Security by Design.
 * Exclusividad curada.
 * Optimización de activos.
+* Marca primero, sistema después.
 
 ---
 
@@ -82,23 +91,36 @@ El PRD es la fuente de verdad funcional. El README es la guía de ejecución.
 
 ```
 /salonos
-├── app/                # Next.js App Router
-│   ├── boutique/       # Frontend clienta
-│   ├── hq/             # Dashboard administrativo
-│   ├── kiosk/          # Sistema de autoservicio (pantalla táctil)
-│   └── api/            # API routes
-│       ├── kiosk/      # Endpoints para kiosko
-│       └── ...
-├── components/         # Componentes UI reutilizables
-│   ├── kiosk/          # Componentes del sistema de kiosko
-│   └── ui/             # Componentes base (Button, Input, Card, etc.)
-├── lib/                # Lógica de negocio y helpers
-│   └── db/             # Tipos TypeScript del esquema
+├── app/                          # Next.js App Router
+│   ├── (anchor23)/               # anchor23.mx - Frontend institucional
+│   │   ├── page.tsx              # Landing page
+│   │   ├── servicios/             # Página de servicios
+│   │   ├── historia/              # Página de historia/filosofía
+│   │   ├── contacto/              # Formulario de contacto
+│   │   ├── franchises/           # Información de franquicias
+│   │   ├── membresias/            # Membresías (Gold, Black, VIP)
+│   │   ├── privacy-policy/        # Política de privacidad
+│   │   └── legal/                # Términos y condiciones
+│   ├── boutique/                  # booking.anchor23.mx - Frontend de reservas
+│   ├── hq/                       # Dashboard administrativo
+│   ├── kiosk/                    # kiosk.anchor23.mx - Sistema de autoservicio
+│   └── api/                      # API routes
+│       ├── kiosk/                 # Endpoints para kiosko
+│       ├── bookings/               # Gestión de reservas
+│       ├── availability/           # Sistema de disponibilidad
+│       └── admin/                 # Endpoints administrativos
+├── components/                    # Componentes UI reutilizables
+│   ├── kiosk/                    # Componentes del sistema de kiosko
+│   └── ui/                       # Componentes base (Button, Input, Card, etc.)
+├── lib/                           # Lógica de negocio y helpers
+│   ├── db/                        # Tipos TypeScript del esquema
+│   └── utils/                     # Utilidades (short-id, etc.)
 ├── supabase/
-│   └── migrations/     # Migraciones SQL versionadas
-├── integrations/       # Stripe, Google, WhatsApp
+│   └── migrations/                # Migraciones SQL versionadas
+├── integrations/                   # Stripe, Google, WhatsApp
 ├── styles/             # Configuración Tailwind
 └── docs/               # Documentación adicional
+    ├── DOMAIN_CONFIGURATION.md    # Configuración de dominios y subdominios
     ├── KIOSK_SYSTEM.md           # Documentación completa del kiosko
     ├── KIOSK_IMPLEMENTATION.md   # Guía rápida de implementación
     └── RESOURCES_UPDATE.md      # Documentación de actualización de recursos
@@ -187,35 +209,96 @@ npm run dev
 - ✅ Actualización de recursos con códigos estandarizados
 - ✅ Audit logging completo
 - ✅ Tiers de cliente extendidos (free, gold, black, VIP)
+- ✅ Sistema de disponibilidad (staff, recursos, bloques)
+- ✅ API routes de disponibilidad
+- ✅ API de reservas para clientes (POST/GET)
+- ✅ HQ Dashboard con calendario multi-columna
+- ✅ Frontend institucional anchor23.mx completo
+  - Landing page con hero, fundamento, servicios, testimoniales
+  - Página de servicios
+  - Página de historia y filosofía
+  - Página de contacto
+  - Página de franquicias
+  - Página de membresías (Gold, Black, VIP)
+  - Páginas legales (Privacy Policy, Legal)
+  - Header y footer globales
 
 ### En Progreso 🚧
-- 🚧 Testing del sistema de kiosko
-- 🚧 Validación de migración de recursos
+- 🚧 The Boutique - Frontend de reservas (booking.anchor23.mx)
+- 🚧 Configuración de dominios wildcard en producción
 
 ### Pendiente ⏳
-- ⏳ API routes para cliente y staff
-- ⏳ Motor de agendamiento con disponibilidad
 - ⏳ Integración con Google Calendar
-- ⏳ Integración con Stripe
-- ⏳ HQ Dashboard (calendario multi-columna, gestión operativa)
+- ⏳ Integración con Stripe (pagos)
 - ⏳ The Vault (storage de fotos privadas)
-- ⏳ Notificaciones y automatización
-- ⏳ Landing page pública
+- ⏳ Notificaciones y automatización (WhatsApp API)
+- ⏳ Autenticación de clientes en The Boutique
 
 ### Fase Actual
-**Fase 1 — Cimientos y CRM**: 90% completado
+**Fase 1 — Cimientos y CRM**: 95% completado
 - Infraestructura base: 100%
 - Esquema de base de datos: 100%
 - Short ID & Invitaciones: 100%
 - CRM Base: 100%
 - Sistema de Kiosko: 100%
 - Actualización de Recursos: 100%
+- Sistema de Disponibilidad: 100%
+- Frontend Institucional: 100%
+
+**Fase 2 — Motor de Agendamiento**: 60% completado
+- Disponibilidad dual capa: 100%
+- API de reservas: 100%
+- The Boutique: 0% (pendiente)
+- Integración Calendar: 0% (pendiente)
+- Integración Pagos: 0% (pendiente)
 
 **Advertencia:** No apto para producción. Migraciones y seeds en evolución.
 
 ---
 
-## 11. Sistema de Kiosko
+## 11. anchor23.mx - Frontend Institucional
+
+Dominio institucional. Contenido estático, marca, narrativa y conversión inicial.
+
+### Arquitectura de Dominios
+- `anchor23.mx` - Frontend institucional (landing page + páginas informativas)
+- `booking.anchor23.mx` - The Boutique (frontend de reservas) - **Pendiente**
+- `kiosk.anchor23.mx` - The Kiosk (pantallas táctiles)
+
+### Páginas Implementadas
+- `/` - Landing page (Hero, Fundamento, Servicios Preview, Testimoniales)
+- `/servicios` - Grid de servicios con descripciones
+- `/historia` - Historia, filosofía y significado de la marca
+- `/contacto` - Formulario de contacto con información
+- `/franchises` - Modelo de franquicias con solicitud
+- `/membresias` - 3 tiers (Gold, Black, VIP) con solicitudes
+- `/privacy-policy` - Política de privacidad completa
+- `/legal` - Términos y condiciones
+
+### Tecnologías
+- Next.js 14 (App Router) con SSG
+- Tailwind CSS para estilos
+- Lucide React para iconos
+- HTML semántico
+
+### Principios de Diseño
+- HTML semántico
+- Secciones claras
+- Conversión silenciosa hacia booking.anchor23.mx
+- Booking y Kiosk desacoplados
+- Marca primero, sistema después
+- Arquitectura lista para escalar sin diluir exclusividad
+
+### Flujo de Conversión
+1. Landing page → Interés en servicios
+2. /servicios → Conocimiento de oferta
+3. /membresias → Solicitud de membresía
+4. CTA directo → booking.anchor23.mx (reserva)
+5. /franchises → Solicitud de franquicia
+
+---
+
+## 12. Sistema de Kiosko
 
 El sistema de kiosko permite a los clientes interactuar con el salón mediante pantallas táctiles en la entrada.
 
@@ -235,10 +318,12 @@ El sistema de kiosko permite a los clientes interactuar con el salón mediante p
 
 ### Acceso al Kiosko
 ```
-https://tu-dominio.com/kiosk/{location-id}
+https://kiosk.anchor23.mx/{location-id}
 ```
 
-## 12. Filosofía Operativa
+---
+
+## 13. Filosofía Operativa
 
 SalonOS no busca volumen.
 
