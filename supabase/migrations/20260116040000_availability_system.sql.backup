@@ -1,0 +1,369 @@
+-- ============================================
+-- FASE 2.1 - DISPONIBILIDAD DOBLE CAPA (INCREMENTAL)
+-- ============================================
+
+-- PASO 1: AGREGAR CAMPOS DE HORARIO A STAFF
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'staff' AND column_name = 'work_hours_start') THEN
+        ALTER TABLE staff ADD COLUMN work_hours_start TIME;
+        RAISE NOTICE 'Added work_hours_start to staff';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'staff' AND column_name = 'work_hours_end') THEN
+        ALTER TABLE staff ADD COLUMN work_hours_end TIME;
+        RAISE NOTICE 'Added work_hours_end to staff';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'staff' AND column_name = 'work_days') THEN
+        ALTER TABLE staff ADD COLUMN work_days TEXT DEFAULT 'MON,TUE,WED,THU,FRI,SAT';
+        RAISE NOTICE 'Added work_days to staff';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'staff' AND column_name = 'is_available_for_booking') THEN
+        ALTER TABLE staff ADD COLUMN is_available_for_booking BOOLEAN DEFAULT true;
+        RAISE NOTICE 'Added is_available_for_booking to staff';
+    END IF;
+END
+$$;
+
+-- PASO 2: CREAR TABLA STAFF_AVAILABILITY
+CREATE TABLE IF NOT EXISTS staff_availability (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    staff_id UUID NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    is_available BOOLEAN DEFAULT true,
+    reason VARCHAR(255),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by UUID REFERENCES staff(id) ON DELETE SET NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_by UUID REFERENCES staff(id) ON DELETE SET NULL,
+    UNIQUE(staff_id, date)
+);
+
+-- PASO 3: CREAR TABLA GOOGLE_CALENDAR_EVENTS
+CREATE TABLE IF NOT EXISTS google_calendar_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    staff_id UUID NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
+    google_event_id VARCHAR(255) UNIQUE NOT NULL,
+    title VARCHAR(500) NOT NULL,
+    description TEXT,
+    start_time_utc TIMESTAMPTZ NOT NULL,
+    end_time_utc TIMESTAMPTZ NOT NULL,
+    is_blocking BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- PASO 4: CREAR TABLA BOOKING_BLOCKS
+CREATE TABLE IF NOT EXISTS booking_blocks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    location_id UUID NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
+    resource_id UUID REFERENCES resources(id) ON DELETE CASCADE,
+    start_time_utc TIMESTAMPTZ NOT NULL,
+    end_time_utc TIMESTAMPTZ NOT NULL,
+    reason VARCHAR(500),
+    created_by UUID REFERENCES staff(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- PASO 5: CREAR INDICES
+CREATE INDEX IF NOT EXISTS idx_staff_availability_staff_date ON staff_availability(staff_id, date);
+CREATE INDEX IF NOT EXISTS idx_staff_availability_date ON staff_availability(date);
+CREATE INDEX IF NOT EXISTS idx_google_calendar_staff ON google_calendar_events(staff_id);
+CREATE INDEX IF NOT EXISTS idx_google_calendar_time ON google_calendar_events(start_time_utc, end_time_utc);
+CREATE INDEX IF NOT EXISTS idx_booking_blocks_location ON booking_blocks(location_id);
+CREATE INDEX IF NOT EXISTS idx_booking_blocks_time ON booking_blocks(start_time_utc, end_time_utc);
+CREATE INDEX IF NOT EXISTS idx_booking_blocks_resource ON booking_blocks(resource_id);
+
+-- PASO 6: CREAR FUNCION DE VERIFICACION DE HORARIO LABORAL
+CREATE OR REPLACE FUNCTION check_staff_work_hours(
+    p_staff_id UUID,
+    p_start_time_utc TIMESTAMPTZ,
+    p_end_time_utc TIMESTAMPTZ
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_staff_record RECORD;
+    v_start_time TIME;
+    v_end_time TIME;
+    v_work_days TEXT;
+    v_day_of_week INTEGER;
+BEGIN
+    SELECT * INTO v_staff_record
+    FROM staff
+    WHERE id = p_staff_id;
+    
+    IF NOT FOUND THEN
+        RETURN false;
+    END IF;
+    
+    IF NOT v_staff_record.is_active THEN
+        RETURN false;
+    END IF;
+    
+    IF NOT v_staff_record.is_available_for_booking THEN
+        RETURN false;
+    END IF;
+    
+    v_start_time := p_start_time_utc::TIME;
+    v_end_time := p_end_time_utc::TIME;
+    v_work_days := v_staff_record.work_days;
+    
+    v_day_of_week := EXTRACT(ISODOW FROM p_start_time_utc);
+    
+    IF v_work_days IS NULL THEN
+        RETURN true;
+    END IF;
+    
+    IF v_day_of_week = 1 AND v_work_days LIKE '%MON%' THEN RETURN true; END IF;
+    IF v_day_of_week = 2 AND v_work_days LIKE '%TUE%' THEN RETURN true; END IF;
+    IF v_day_of_week = 3 AND v_work_days LIKE '%WED%' THEN RETURN true; END IF;
+    IF v_day_of_week = 4 AND v_work_days LIKE '%THU%' THEN RETURN true; END IF;
+    IF v_day_of_week = 5 AND v_work_days LIKE '%FRI%' THEN RETURN true; END IF;
+    IF v_day_of_week = 6 AND v_work_days LIKE '%SAT%' THEN RETURN true; END IF;
+    IF v_day_of_week = 7 AND v_work_days LIKE '%SUN%' THEN RETURN true; END IF;
+    
+    IF v_start_time < v_staff_record.work_hours_start OR 
+       v_end_time > v_staff_record.work_hours_end THEN
+        RETURN false;
+    END IF;
+    
+    RETURN true;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- PASO 7: CREAR FUNCION DE VERIFICACION DE DISPONIBILIDAD DE STAFF
+CREATE OR REPLACE FUNCTION check_staff_availability(
+    p_staff_id UUID,
+    p_start_time_utc TIMESTAMPTZ,
+    p_end_time_utc TIMESTAMPTZ,
+    p_exclude_booking_id UUID DEFAULT NULL
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_is_work_hours BOOLEAN;
+    v_has_calendar_conflict BOOLEAN;
+    v_has_manual_block BOOLEAN;
+BEGIN
+    v_is_work_hours := check_staff_work_hours(p_staff_id, p_start_time_utc, p_end_time_utc);
+    
+    IF NOT v_is_work_hours THEN
+        RETURN false;
+    END IF;
+    
+    SELECT EXISTS(
+        SELECT 1
+        FROM google_calendar_events
+        WHERE staff_id = p_staff_id
+        AND is_blocking = true
+        AND NOT (p_end_time_utc <= start_time_utc OR p_start_time_utc >= end_time_utc)
+    ) INTO v_has_calendar_conflict;
+    
+    IF v_has_calendar_conflict THEN
+        RETURN false;
+    END IF;
+    
+    SELECT EXISTS(
+        SELECT 1
+        FROM bookings
+        WHERE staff_id = p_staff_id
+        AND status NOT IN ('cancelled', 'no_show')
+        AND (p_exclude_booking_id IS NULL OR id != p_exclude_booking_id)
+        AND NOT (p_end_time_utc <= start_time_utc OR p_start_time_utc >= end_time_utc)
+    ) INTO v_has_manual_block;
+    
+    IF v_has_manual_block THEN
+        RETURN false;
+    END IF;
+    
+    SELECT EXISTS(
+        SELECT 1
+        FROM staff_availability
+        WHERE staff_id = p_staff_id
+        AND date = p_start_time_utc::DATE
+        AND is_available = false
+        AND NOT (p_end_time_utc::TIME <= start_time OR p_start_time_utc::TIME >= end_time)
+    ) INTO v_has_manual_block;
+    
+    IF v_has_manual_block THEN
+        RETURN false;
+    END IF;
+    
+    RETURN true;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- PASO 8: CREAR FUNCION DE VERIFICACION DE DISPONIBILIDAD DE RECURSO
+CREATE OR REPLACE FUNCTION check_resource_availability(
+    p_resource_id UUID,
+    p_start_time_utc TIMESTAMPTZ,
+    p_end_time_utc TIMESTAMPTZ,
+    p_exclude_booking_id UUID DEFAULT NULL
+)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN NOT EXISTS(
+        SELECT 1
+        FROM bookings
+        WHERE resource_id = p_resource_id
+        AND status NOT IN ('cancelled', 'no_show')
+        AND (p_exclude_booking_id IS NULL OR id != p_exclude_booking_id)
+        AND NOT (p_end_time_utc <= start_time_utc OR p_start_time_utc >= end_time_utc)
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- PASO 9: CREAR FUNCION DE VERIFICACION DE BLOQUEOS DE LOCATION
+CREATE OR REPLACE FUNCTION check_location_block(
+    p_location_id UUID,
+    p_start_time_utc TIMESTAMPTZ,
+    p_end_time_utc TIMESTAMPTZ
+)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN NOT EXISTS(
+        SELECT 1
+        FROM booking_blocks
+        WHERE location_id = p_location_id
+        AND NOT (p_end_time_utc <= start_time_utc OR p_start_time_utc >= end_time_utc)
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- PASO 10: CREAR FUNCION PRINCIPAL DE VERIFICACION
+CREATE OR REPLACE FUNCTION check_availability(
+    p_location_id UUID,
+    p_staff_id UUID,
+    p_resource_id UUID,
+    p_start_time_utc TIMESTAMPTZ,
+    p_end_time_utc TIMESTAMPTZ,
+    p_exclude_booking_id UUID DEFAULT NULL
+)
+RETURNS JSONB AS $$
+DECLARE
+    v_staff_available BOOLEAN;
+    v_resource_available BOOLEAN;
+    v_location_available BOOLEAN;
+    v_available BOOLEAN;
+    v_conflict_type VARCHAR(100);
+BEGIN
+    v_staff_available := check_staff_availability(p_staff_id, p_start_time_utc, p_end_time_utc, p_exclude_booking_id);
+    v_resource_available := check_resource_availability(p_resource_id, p_start_time_utc, p_end_time_utc, p_exclude_booking_id);
+    v_location_available := NOT check_location_block(p_location_id, p_start_time_utc, p_end_time_utc);
+    
+    v_available := v_staff_available AND v_resource_available AND v_location_available;
+    
+    IF NOT v_available THEN
+        IF NOT v_staff_available THEN v_conflict_type := 'staff_not_available';
+        ELSIF NOT v_resource_available THEN v_conflict_type := 'resource_not_available';
+        ELSIF NOT v_location_available THEN v_conflict_type := 'location_blocked';
+        END IF;
+    END IF;
+    
+    RETURN jsonb_build_object(
+        'available', v_available,
+        'staff_available', v_staff_available,
+        'resource_available', v_resource_available,
+        'location_available', v_location_available,
+        'conflict_type', v_conflict_type
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- PASO 11: CREAR FUNCION PARA OBTENER STAFF DISPONIBLE
+CREATE OR REPLACE FUNCTION get_available_staff(
+    p_location_id UUID,
+    p_start_time_utc TIMESTAMPTZ,
+    p_end_time_utc TIMESTAMPTZ,
+    p_service_id UUID DEFAULT NULL,
+    p_exclude_booking_id UUID DEFAULT NULL
+)
+RETURNS TABLE (
+    staff_id UUID,
+    staff_name VARCHAR,
+    role VARCHAR,
+    work_hours_start TIME,
+    work_hours_end TIME,
+    work_days TEXT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        s.id,
+        s.display_name,
+        s.role,
+        s.work_hours_start,
+        s.work_hours_end,
+        s.work_days
+    FROM staff s
+    WHERE s.location_id = p_location_id
+    AND s.is_active = true
+    AND s.is_available_for_booking = true
+    AND s.role IN ('artist', 'staff', 'manager')
+    AND check_staff_availability(s.id, p_start_time_utc, p_end_time_utc, p_exclude_booking_id)
+    ORDER BY 
+        CASE s.role
+            WHEN 'manager' THEN 1
+            WHEN 'staff' THEN 2
+            WHEN 'artist' THEN 3
+        END;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- PASO 12: CREAR FUNCION PARA OBTENER DISPONIBILIDAD DETALLADA
+CREATE OR REPLACE FUNCTION get_detailed_availability(
+    p_location_id UUID,
+    p_service_id UUID,
+    p_date DATE,
+    p_time_slot_duration_minutes INTEGER DEFAULT 60
+)
+RETURNS JSONB AS $$
+DECLARE
+    v_service_duration INTEGER;
+    v_start_time TIME := '09:00'::TIME;
+    v_end_time TIME := '21:00'::TIME;
+    v_time_slots JSONB;
+    v_slot_time TIMESTAMPTZ;
+    v_slot_end TIMESTAMPTZ;
+    v_count INTEGER;
+BEGIN
+    SELECT duration_minutes INTO v_service_duration
+    FROM services
+    WHERE id = p_service_id;
+    
+    IF v_service_duration IS NULL THEN
+        v_service_duration := p_time_slot_duration_minutes;
+    END IF;
+    
+    FOR v_count IN 0..((EXTRACT(HOUR FROM v_end_time - v_start_time) * 60 + EXTRACT(MINUTE FROM v_end_time - v_start_time)) / v_service_duration LOOP
+        v_slot_time := p_date::TIMESTAMPTZ + v_start_time + (v_count * v_service_duration || ' minutes')::INTERVAL;
+        v_slot_end := v_slot_time + v_service_duration || ' minutes'::INTERVAL;
+        
+        SELECT jsonb_agg(
+            jsonb_build_object(
+                'start_time', v_slot_time,
+                'end_time', v_slot_end,
+                'available_staff', (
+                    SELECT jsonb_agg(
+                        jsonb_build_object(
+                            'staff_id', s.id,
+                            'name', s.display_name,
+                            'role', s.role
+                        )
+                    )
+                    FROM staff s
+                    WHERE s.location_id = p_location_id
+                    AND s.is_active = true
+                    AND s.is_available_for_booking = true
+                    AND s.role IN ('artist', 'staff', 'manager')
+                    AND check_staff_availability(s.id, v_slot_time, v_slot_end)
+                )
+            )
+        ) INTO v_time_slots
+        FROM staff
+        LIMIT 1;
+    END LOOP;
+    
