@@ -226,8 +226,9 @@ BEGIN
     -- Contar garantías procesadas (simulamos por bookings de servicios con garantía)
     -- En un sistema real, esto vendría de una tabla de garantías
     SELECT 
-        COUNT(*) INTO v_guarantees_count,
-        COALESCE(SUM(b.total_amount * 0.1), 0) INTO v_guarantees_amount
+        COUNT(*),
+        COALESCE(SUM(b.total_amount * 0.1), 0)
+    INTO v_guarantees_count, v_guarantees_amount
     FROM bookings b
     JOIN services s ON s.id = b.service_id
     WHERE b.staff_id = p_staff_id
