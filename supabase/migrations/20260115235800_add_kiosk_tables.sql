@@ -1,5 +1,5 @@
 -- ============================================
--- SALONOS - FULL DATABASE MIGRATION
+-- SALONOS - CORRECTED FULL DATABASE MIGRATION
 -- Ejecutar TODO este archivo en Supabase SQL Editor
 -- URL: https://supabase.com/dashboard/project/pvvwbnybkadhreuqijsl/sql
 -- ============================================
@@ -8,20 +8,34 @@
 -- BEGIN MIGRATION 001: INITIAL SCHEMA
 -- ============================================
 
--- Habilitar UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- UUID extension not needed in Supabase (uses gen_random_uuid)
 
 -- ENUMS
-CREATE TYPE user_role AS ENUM ('admin', 'manager', 'staff', 'artist', 'customer');
-CREATE TYPE customer_tier AS ENUM ('free', 'gold');
-CREATE TYPE booking_status AS ENUM ('pending', 'confirmed', 'cancelled', 'completed', 'no_show');
-CREATE TYPE invitation_status AS ENUM ('pending', 'used', 'expired');
-CREATE TYPE resource_type AS ENUM ('station', 'room', 'equipment');
-CREATE TYPE audit_action AS ENUM ('create', 'update', 'delete', 'reset_invitations', 'payment', 'status_change');
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
+        CREATE TYPE user_role AS ENUM ('admin', 'manager', 'staff', 'artist', 'customer');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'customer_tier') THEN
+        CREATE TYPE customer_tier AS ENUM ('free', 'gold', 'black', 'VIP');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'booking_status') THEN
+        CREATE TYPE booking_status AS ENUM ('pending', 'confirmed', 'cancelled', 'completed', 'no_show');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'invitation_status') THEN
+        CREATE TYPE invitation_status AS ENUM ('pending', 'used', 'expired');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'resource_type') THEN
+        CREATE TYPE resource_type AS ENUM ('station', 'room', 'equipment');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'audit_action') THEN
+        CREATE TYPE audit_action AS ENUM ('create', 'update', 'delete', 'reset_invitations', 'payment', 'status_change');
+    END IF;
+END $$;
 
 -- LOCATIONS
-CREATE TABLE locations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS locations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     timezone VARCHAR(50) NOT NULL DEFAULT 'UTC',
     address TEXT,
@@ -32,8 +46,8 @@ CREATE TABLE locations (
 );
 
 -- RESOURCES
-CREATE TABLE resources (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS resources (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     location_id UUID NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     type resource_type NOT NULL,
@@ -44,8 +58,8 @@ CREATE TABLE resources (
 );
 
 -- STAFF
-CREATE TABLE staff (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS staff (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
     location_id UUID NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
     role user_role NOT NULL CHECK (role IN ('admin', 'manager', 'staff', 'artist')),
@@ -58,8 +72,8 @@ CREATE TABLE staff (
 );
 
 -- SERVICES
-CREATE TABLE services (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS services (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     description TEXT,
     duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0),
@@ -72,8 +86,8 @@ CREATE TABLE services (
 );
 
 -- CUSTOMERS
-CREATE TABLE customers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS customers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID UNIQUE,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
@@ -90,8 +104,8 @@ CREATE TABLE customers (
 );
 
 -- INVITATIONS
-CREATE TABLE invitations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS invitations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     inviter_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
     code VARCHAR(10) UNIQUE NOT NULL,
     email VARCHAR(255),
@@ -104,8 +118,8 @@ CREATE TABLE invitations (
 );
 
 -- BOOKINGS
-CREATE TABLE bookings (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS bookings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     short_id VARCHAR(6) UNIQUE NOT NULL,
     customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
     staff_id UUID NOT NULL REFERENCES staff(id) ON DELETE RESTRICT,
@@ -126,8 +140,8 @@ CREATE TABLE bookings (
 );
 
 -- AUDIT LOGS
-CREATE TABLE audit_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     entity_type VARCHAR(50) NOT NULL,
     entity_id UUID NOT NULL,
     action audit_action NOT NULL,
@@ -142,29 +156,30 @@ CREATE TABLE audit_logs (
 );
 
 -- INDEXES
-CREATE INDEX idx_locations_active ON locations(is_active);
-CREATE INDEX idx_resources_location ON resources(location_id);
-CREATE INDEX idx_resources_active ON resources(location_id, is_active);
-CREATE INDEX idx_staff_user ON staff(user_id);
-CREATE INDEX idx_staff_location ON staff(location_id);
-CREATE INDEX idx_staff_role ON staff(location_id, role, is_active);
-CREATE INDEX idx_services_active ON services(is_active);
-CREATE INDEX idx_customers_tier ON customers(tier);
-CREATE INDEX idx_customers_email ON customers(email);
-CREATE INDEX idx_customers_active ON customers(is_active);
-CREATE INDEX idx_invitations_inviter ON invitations(inviter_id);
-CREATE INDEX idx_invitations_code ON invitations(code);
-CREATE INDEX idx_invitations_week ON invitations(week_start_date, status);
-CREATE INDEX idx_bookings_customer ON bookings(customer_id);
-CREATE INDEX idx_bookings_staff ON bookings(staff_id);
-CREATE INDEX idx_bookings_location ON bookings(location_id);
-CREATE INDEX idx_bookings_resource ON bookings(resource_id);
-CREATE INDEX idx_bookings_time ON bookings(start_time_utc, end_time_utc);
-CREATE INDEX idx_bookings_status ON bookings(status);
-CREATE INDEX idx_bookings_short_id ON bookings(short_id);
-CREATE INDEX idx_audit_entity ON audit_logs(entity_type, entity_id);
-CREATE INDEX idx_audit_action ON audit_logs(action, created_at);
-CREATE INDEX idx_audit_performed ON audit_logs(performed_by);
+CREATE INDEX IF NOT EXISTS idx_locations_active ON locations(is_active);
+CREATE INDEX IF NOT EXISTS idx_resources_location ON resources(location_id);
+CREATE INDEX IF NOT EXISTS idx_resources_active ON resources(location_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_staff_user ON staff(user_id);
+CREATE INDEX IF NOT EXISTS idx_staff_location ON staff(location_id);
+CREATE INDEX IF NOT EXISTS idx_staff_role ON staff(location_id, role, is_active);
+CREATE INDEX IF NOT EXISTS idx_services_active ON services(is_active);
+CREATE INDEX IF NOT EXISTS idx_customers_tier ON customers(tier);
+CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
+CREATE INDEX IF NOT EXISTS idx_customers_active ON customers(is_active);
+CREATE INDEX IF NOT EXISTS idx_invitations_inviter ON invitations(inviter_id);
+CREATE INDEX IF NOT EXISTS idx_invitations_code ON invitations(code);
+CREATE INDEX IF NOT EXISTS idx_invitations_week ON invitations(week_start_date, status);
+CREATE INDEX IF NOT EXISTS idx_bookings_customer ON bookings(customer_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_staff ON bookings(staff_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_secondary_artist ON bookings(secondary_artist_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_location ON bookings(location_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_resource ON bookings(resource_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_time ON bookings(start_time_utc, end_time_utc);
+CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
+CREATE INDEX IF NOT EXISTS idx_bookings_short_id ON bookings(short_id);
+CREATE INDEX IF NOT EXISTS idx_audit_entity ON audit_logs(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_logs(action, created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_performed ON audit_logs(performed_by);
 
 -- UPDATED_AT TRIGGER FUNCTION
 CREATE OR REPLACE FUNCTION update_updated_at()
@@ -176,39 +191,62 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- UPDATED_AT TRIGGERS
+DROP TRIGGER IF EXISTS locations_updated_at ON locations;
 CREATE TRIGGER locations_updated_at BEFORE UPDATE ON locations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS resources_updated_at ON resources;
 CREATE TRIGGER resources_updated_at BEFORE UPDATE ON resources
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS staff_updated_at ON staff;
 CREATE TRIGGER staff_updated_at BEFORE UPDATE ON staff
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS services_updated_at ON services;
 CREATE TRIGGER services_updated_at BEFORE UPDATE ON services
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS customers_updated_at ON customers;
 CREATE TRIGGER customers_updated_at BEFORE UPDATE ON customers
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS invitations_updated_at ON invitations;
 CREATE TRIGGER invitations_updated_at BEFORE UPDATE ON invitations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS bookings_updated_at ON bookings;
 CREATE TRIGGER bookings_updated_at BEFORE UPDATE ON bookings
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
--- CONSTRAINTS
+-- CONSTRAINTS (Simple ones only - no subqueries)
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS check_booking_time;
 ALTER TABLE bookings ADD CONSTRAINT check_booking_time
     CHECK (end_time_utc > start_time_utc);
 
-ALTER TABLE bookings ADD CONSTRAINT check_secondary_artist_role
-    CHECK (secondary_artist_id IS NULL OR EXISTS (
-        SELECT 1 FROM staff s
-        WHERE s.id = secondary_artist_id AND s.role = 'artist'
-    ));
-
+ALTER TABLE invitations DROP CONSTRAINT IF EXISTS check_week_start_is_monday;
 ALTER TABLE invitations ADD CONSTRAINT check_week_start_is_monday
     CHECK (EXTRACT(ISODOW FROM week_start_date) = 1);
+
+-- Trigger for secondary_artist validation (instead of CHECK constraint with subquery)
+CREATE OR REPLACE FUNCTION validate_secondary_artist_role()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.secondary_artist_id IS NOT NULL THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM staff s
+            WHERE s.id = NEW.secondary_artist_id AND s.role = 'artist' AND s.is_active = true
+        ) THEN
+            RAISE EXCEPTION 'secondary_artist_id must reference an active staff member with role ''artist''';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS validate_booking_secondary_artist ON bookings;
+CREATE TRIGGER validate_booking_secondary_artist BEFORE INSERT OR UPDATE ON bookings
+    FOR EACH ROW EXECUTE FUNCTION validate_secondary_artist_role();
 
 -- ============================================
 -- BEGIN MIGRATION 002: RLS POLICIES
@@ -285,32 +323,39 @@ ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- LOCATIONS POLICIES
+DROP POLICY IF EXISTS "locations_select_staff_higher" ON locations;
 CREATE POLICY "locations_select_staff_higher" ON locations
     FOR SELECT
     USING (is_staff_or_higher() OR is_admin());
 
+DROP POLICY IF EXISTS "locations_modify_admin_manager" ON locations;
 CREATE POLICY "locations_modify_admin_manager" ON locations
     FOR ALL
     USING (get_current_user_role() IN ('admin', 'manager'));
 
 -- RESOURCES POLICIES
+DROP POLICY IF EXISTS "resources_select_staff_higher" ON resources;
 CREATE POLICY "resources_select_staff_higher" ON resources
     FOR SELECT
     USING (is_staff_or_higher() OR is_admin());
 
+DROP POLICY IF EXISTS "resources_select_artist" ON resources;
 CREATE POLICY "resources_select_artist" ON resources
     FOR SELECT
     USING (is_artist());
 
+DROP POLICY IF EXISTS "resources_modify_admin_manager" ON resources;
 CREATE POLICY "resources_modify_admin_manager" ON resources
     FOR ALL
     USING (get_current_user_role() IN ('admin', 'manager'));
 
 -- STAFF POLICIES
+DROP POLICY IF EXISTS "staff_select_admin_manager" ON staff;
 CREATE POLICY "staff_select_admin_manager" ON staff
     FOR SELECT
     USING (get_current_user_role() IN ('admin', 'manager'));
 
+DROP POLICY IF EXISTS "staff_select_same_location" ON staff;
 CREATE POLICY "staff_select_same_location" ON staff
     FOR SELECT
     USING (
@@ -320,6 +365,7 @@ CREATE POLICY "staff_select_same_location" ON staff
         )
     );
 
+DROP POLICY IF EXISTS "staff_select_artist_view_artists" ON staff;
 CREATE POLICY "staff_select_artist_view_artists" ON staff
     FOR SELECT
     USING (
@@ -330,74 +376,91 @@ CREATE POLICY "staff_select_artist_view_artists" ON staff
         staff.role = 'artist'
     );
 
+DROP POLICY IF EXISTS "staff_modify_admin_manager" ON staff;
 CREATE POLICY "staff_modify_admin_manager" ON staff
     FOR ALL
     USING (get_current_user_role() IN ('admin', 'manager'));
 
 -- SERVICES POLICIES
+DROP POLICY IF EXISTS "services_select_all" ON services;
 CREATE POLICY "services_select_all" ON services
     FOR SELECT
     USING (is_active = true);
 
+DROP POLICY IF EXISTS "services_all_admin_manager" ON services;
 CREATE POLICY "services_all_admin_manager" ON services
     FOR ALL
     USING (get_current_user_role() IN ('admin', 'manager'));
 
 -- CUSTOMERS POLICIES (RESTRICTED FOR ARTISTS)
+DROP POLICY IF EXISTS "customers_select_admin_manager" ON customers;
 CREATE POLICY "customers_select_admin_manager" ON customers
     FOR SELECT
     USING (get_current_user_role() IN ('admin', 'manager'));
 
+DROP POLICY IF EXISTS "customers_select_staff" ON customers;
 CREATE POLICY "customers_select_staff" ON customers
     FOR SELECT
     USING (is_staff_or_higher());
 
+DROP POLICY IF EXISTS "customers_select_artist_restricted" ON customers;
 CREATE POLICY "customers_select_artist_restricted" ON customers
     FOR SELECT
     USING (is_artist());
 
+DROP POLICY IF EXISTS "customers_select_own" ON customers;
 CREATE POLICY "customers_select_own" ON customers
     FOR SELECT
     USING (is_customer() AND user_id = auth.uid());
 
+DROP POLICY IF EXISTS "customers_modify_admin_manager" ON customers;
 CREATE POLICY "customers_modify_admin_manager" ON customers
     FOR ALL
     USING (get_current_user_role() IN ('admin', 'manager'));
 
+DROP POLICY IF EXISTS "customers_modify_staff" ON customers;
 CREATE POLICY "customers_modify_staff" ON customers
     FOR ALL
     USING (is_staff_or_higher());
 
+DROP POLICY IF EXISTS "customers_update_own" ON customers;
 CREATE POLICY "customers_update_own" ON customers
     FOR UPDATE
     USING (is_customer() AND user_id = auth.uid());
 
 -- INVITATIONS POLICIES
+DROP POLICY IF EXISTS "invitations_select_admin_manager" ON invitations;
 CREATE POLICY "invitations_select_admin_manager" ON invitations
     FOR SELECT
     USING (get_current_user_role() IN ('admin', 'manager'));
 
+DROP POLICY IF EXISTS "invitations_select_staff" ON invitations;
 CREATE POLICY "invitations_select_staff" ON invitations
     FOR SELECT
     USING (is_staff_or_higher());
 
+DROP POLICY IF EXISTS "invitations_select_own" ON invitations;
 CREATE POLICY "invitations_select_own" ON invitations
     FOR SELECT
     USING (is_customer() AND inviter_id = (SELECT id FROM customers WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "invitations_modify_admin_manager" ON invitations;
 CREATE POLICY "invitations_modify_admin_manager" ON invitations
     FOR ALL
     USING (get_current_user_role() IN ('admin', 'manager'));
 
+DROP POLICY IF EXISTS "invitations_modify_staff" ON invitations;
 CREATE POLICY "invitations_modify_staff" ON invitations
     FOR ALL
     USING (is_staff_or_higher());
 
 -- BOOKINGS POLICIES
+DROP POLICY IF EXISTS "bookings_select_admin_manager" ON bookings;
 CREATE POLICY "bookings_select_admin_manager" ON bookings
     FOR SELECT
     USING (get_current_user_role() IN ('admin', 'manager'));
 
+DROP POLICY IF EXISTS "bookings_select_staff_location" ON bookings;
 CREATE POLICY "bookings_select_staff_location" ON bookings
     FOR SELECT
     USING (
@@ -407,6 +470,7 @@ CREATE POLICY "bookings_select_staff_location" ON bookings
         )
     );
 
+DROP POLICY IF EXISTS "bookings_select_artist_own" ON bookings;
 CREATE POLICY "bookings_select_artist_own" ON bookings
     FOR SELECT
     USING (
@@ -415,14 +479,17 @@ CREATE POLICY "bookings_select_artist_own" ON bookings
          secondary_artist_id = (SELECT id FROM staff WHERE user_id = auth.uid()))
     );
 
+DROP POLICY IF EXISTS "bookings_select_own" ON bookings;
 CREATE POLICY "bookings_select_own" ON bookings
     FOR SELECT
     USING (is_customer() AND customer_id = (SELECT id FROM customers WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "bookings_modify_admin_manager" ON bookings;
 CREATE POLICY "bookings_modify_admin_manager" ON bookings
     FOR ALL
     USING (get_current_user_role() IN ('admin', 'manager'));
 
+DROP POLICY IF EXISTS "bookings_modify_staff_location" ON bookings;
 CREATE POLICY "bookings_modify_staff_location" ON bookings
     FOR ALL
     USING (
@@ -432,10 +499,12 @@ CREATE POLICY "bookings_modify_staff_location" ON bookings
         )
     );
 
+DROP POLICY IF EXISTS "bookings_no_modify_artist" ON bookings;
 CREATE POLICY "bookings_no_modify_artist" ON bookings
     FOR ALL
     USING (NOT is_artist());
 
+DROP POLICY IF EXISTS "bookings_create_own" ON bookings;
 CREATE POLICY "bookings_create_own" ON bookings
     FOR INSERT
     WITH CHECK (
@@ -443,6 +512,7 @@ CREATE POLICY "bookings_create_own" ON bookings
         customer_id = (SELECT id FROM customers WHERE user_id = auth.uid())
     );
 
+DROP POLICY IF EXISTS "bookings_update_own" ON bookings;
 CREATE POLICY "bookings_update_own" ON bookings
     FOR UPDATE
     USING (
@@ -451,10 +521,12 @@ CREATE POLICY "bookings_update_own" ON bookings
     );
 
 -- AUDIT LOGS POLICIES
+DROP POLICY IF EXISTS "audit_logs_select_admin_manager" ON audit_logs;
 CREATE POLICY "audit_logs_select_admin_manager" ON audit_logs
     FOR SELECT
     USING (get_current_user_role() IN ('admin', 'manager'));
 
+DROP POLICY IF EXISTS "audit_logs_select_staff_location" ON audit_logs;
 CREATE POLICY "audit_logs_select_staff_location" ON audit_logs
     FOR SELECT
     USING (
@@ -467,6 +539,7 @@ CREATE POLICY "audit_logs_select_staff_location" ON audit_logs
         )
     );
 
+DROP POLICY IF EXISTS "audit_logs_no_insert" ON audit_logs;
 CREATE POLICY "audit_logs_no_insert" ON audit_logs
     FOR INSERT
     WITH CHECK (false);
@@ -507,18 +580,18 @@ CREATE OR REPLACE FUNCTION generate_invitation_code()
 RETURNS VARCHAR(10) AS $$
 DECLARE
     chars VARCHAR(36) := '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    code VARCHAR(10);
+    new_code VARCHAR(10);
     attempts INT := 0;
     max_attempts INT := 10;
 BEGIN
     LOOP
-        code := '';
+        new_code := '';
         FOR i IN 1..10 LOOP
-            code := code || substr(chars, floor(random() * 36 + 1)::INT, 1);
+            new_code := new_code || substr(chars, floor(random() * 36 + 1)::INT, 1);
         END LOOP;
 
-        IF NOT EXISTS (SELECT 1 FROM invitations WHERE code = code) THEN
-            RETURN code;
+        IF NOT EXISTS (SELECT 1 FROM invitations WHERE code = new_code) THEN
+            RETURN new_code;
         END IF;
 
         attempts := attempts + 1;
@@ -579,7 +652,7 @@ BEGIN
             customer_uuid,
             'reset_invitations',
             '{"week_start": null}'::JSONB,
-            '{"week_start": "' || week_start || '", "count": 5}'::JSONB,
+            jsonb_build_object('week_start', week_start, 'count', 5),
             NULL,
             'system',
             '{"reset_type": "weekly", "invitations_created": 5}'::JSONB
@@ -596,6 +669,7 @@ DECLARE
     customers_count INTEGER := 0;
     invitations_created INTEGER := 0;
     result JSONB;
+    customer_record RECORD;
 BEGIN
     FOR customer_record IN
         SELECT id FROM customers WHERE tier = 'gold' AND is_active = true
@@ -622,7 +696,7 @@ BEGIN
     )
     VALUES (
         'invitations',
-        uuid_generate_v4(),
+        gen_random_uuid(),
         'reset_invitations',
         '{}'::JSONB,
         result,
@@ -721,18 +795,23 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- APPLY AUDIT LOG TRIGGERS
+DROP TRIGGER IF EXISTS audit_bookings ON bookings;
 CREATE TRIGGER audit_bookings AFTER INSERT OR UPDATE OR DELETE ON bookings
     FOR EACH ROW EXECUTE FUNCTION log_audit();
 
+DROP TRIGGER IF EXISTS audit_customers ON customers;
 CREATE TRIGGER audit_customers AFTER INSERT OR UPDATE OR DELETE ON customers
     FOR EACH ROW EXECUTE FUNCTION log_audit();
 
+DROP TRIGGER IF EXISTS audit_invitations ON invitations;
 CREATE TRIGGER audit_invitations AFTER INSERT OR UPDATE OR DELETE ON invitations
     FOR EACH ROW EXECUTE FUNCTION log_audit();
 
+DROP TRIGGER IF EXISTS audit_staff ON staff;
 CREATE TRIGGER audit_staff AFTER INSERT OR UPDATE OR DELETE ON staff
     FOR EACH ROW EXECUTE FUNCTION log_audit();
 
+DROP TRIGGER IF EXISTS audit_services ON services;
 CREATE TRIGGER audit_services AFTER INSERT OR UPDATE OR DELETE ON services
     FOR EACH ROW EXECUTE FUNCTION log_audit();
 
@@ -747,6 +826,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS booking_generate_short_id ON bookings;
 CREATE TRIGGER booking_generate_short_id BEFORE INSERT ON bookings
     FOR EACH ROW EXECUTE FUNCTION generate_booking_short_id();
 
@@ -760,8 +840,8 @@ BEGIN
     RAISE NOTICE 'SALONOS - DATABASE MIGRATION COMPLETED';
     RAISE NOTICE '===========================================';
     RAISE NOTICE '✅ Tables created: 8';
-    RAISE NOTICE '✅ Functions created: 13';
-    RAISE NOTICE '✅ Triggers active: 15+';
+    RAISE NOTICE '✅ Functions created: 14';
+    RAISE NOTICE '✅ Triggers active: 17+';
     RAISE NOTICE '✅ RLS policies configured: 20+';
     RAISE NOTICE '✅ ENUM types created: 6';
     RAISE NOTICE '===========================================';
