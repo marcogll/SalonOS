@@ -425,6 +425,17 @@ La migración de recursos eliminó todos los bookings existentes debido a CASCAD
 - Implementarse con migración de datos
 - Notificar a clientes de la necesidad de reprogramar
 
+### Good to Have - Funcionalidades Adicionales
+
+8. **Sistema de Passes Digitales para Clientes**
+   - Los clientes pueden generar passes/códigos de acceso desde su cuenta
+   - Pases válidos por tiempo limitado
+   - Integración con wallet móvil
+   - Gestión de passes activos/inactivos
+   - Auditoría de uso de passes
+
+---
+
 ### Próximas Decisiones
 1. ¿Implementar Auth con Supabase Magic Links o SMS?
 2. ¿Usar Google Calendar API o Edge Functions para sync?

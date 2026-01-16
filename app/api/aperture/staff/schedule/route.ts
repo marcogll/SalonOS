@@ -15,13 +15,15 @@ export async function GET(request: NextRequest) {
       .order('date', { ascending: true })
 
     if (locationId) {
-      const locationStaff = await supabaseAdmin
+      const { data: locationStaff } = await supabaseAdmin
         .from('staff')
         .select('id, display_name')
         .eq('location_id', locationId)
         .eq('is_active', true)
 
-      query = query.in('staff_id', locationStaff.map(s => s.id))
+      if (locationStaff && locationStaff.length > 0) {
+        query = query.in('staff_id', locationStaff.map(s => s.id))
+      }
     }
 
     if (staffId) {

@@ -21,16 +21,26 @@ export default function BookingLayout({
           </div>
 
           <div className="nav-actions flex items-center gap-4">
-            <Link href="/mis-citas">
+            <Link href="/booking/servicios">
+              <Button variant="ghost" size="sm">
+                Reservar
+              </Button>
+            </Link>
+            <Link href="/booking/mis-citas">
               <Button variant="ghost" size="sm">
                 <Calendar className="w-4 h-4 mr-2" />
                 Mis Citas
               </Button>
             </Link>
-            <Link href="/perfil">
+            <Link href="/booking/perfil">
               <Button variant="ghost" size="sm">
                 <User className="w-4 h-4 mr-2" />
                 Perfil
+              </Button>
+            </Link>
+            <Link href="/booking/login">
+              <Button variant="outline" size="sm">
+                Iniciar Sesión
               </Button>
             </Link>
           </div>

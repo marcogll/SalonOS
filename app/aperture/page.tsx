@@ -176,16 +176,18 @@ export default function ApertureDashboard() {
                           </div>
                           <div className="text-right">
                             <span className={`px-2 py-1 rounded text-xs ${
-                              booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                              booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-gray-100 text-gray-800'
+                              booking.status === 'confirmed'
+                                ? 'bg-green-100 text-green-800'
+                                : booking.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-gray-100 text-gray-800'
                             }`}>
                               {booking.status}
                             </span>
                           </div>
                         </div>
                       </div>
-                    )
+                    ))
                   )}
                 </div>
               )}
