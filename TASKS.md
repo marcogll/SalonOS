@@ -329,20 +329,34 @@ Validación Staff (rol Staff):
 - 🚧 The Boutique - Frontend de reservas (booking.anchor23.mx)
   - ✅ Página de selección de servicios (/booking/servicios)
   - ✅ Página de confirmación de reserva (/booking/cita)
+  - ✅ Página de confirmación por código (/booking/confirmacion)
+  - ✅ Layout específico con navbar personalizado
   - ✅ API para obtener servicios (/api/services)
   - ✅ API para obtener ubicaciones (/api/locations)
   - ⏳ Configuración de dominios wildcard en producción
+  - ⏳ Autenticación de clientes
+  - ⏳ Integración con Stripe
+
+- 🚧 Aperture - Backend para staff/manager/admin (aperture.anchor23.mx)
+  - ✅ API para obtener staff disponible (/api/aperture/staff)
+  - ✅ API para gestión de horarios (/api/aperture/staff/schedule)
+  - ✅ API para recursos (/api/aperture/resources)
+  - ✅ API para dashboard (/api/aperture/dashboard)
+  - ✅ Página principal de admin (/aperture)
+  - ⏳ Autenticación de admin/staff/manager
+  - ⏳ Gestión completa de staff
+  - ⏳ Gestión de recursos y asignación
 
 ### ⏳ Pendiente
-- ⏳ Implementar aperture.anchor23.mx - Backend para staff/manager/admin
-- ⏳ Implementar API pública (api.anchor23.mx)
-- ⏳ Implementar sistema de asignación de disponibilidad (staff management)
-- ⏳ Implementar autenticación para staff/manager/admin
+- ⏳ Implementar API pública (api.anchor23.mx) - Horarios, servicios, ubicaciones públicas
+- ⏳ Implementar autenticación para staff/manager/admin (Supabase Auth)
+- ⏳ Implementar sistema completo de asignación de disponibilidad
 - ⏳ Integración con Google Calendar
-- ⏳ Integración con Stripe (pagos)
+- ⏳ Integración con Stripe (pagos y depósitos dinámicos)
 - ⏳ The Vault (storage de fotos privadas)
 - ⏳ Notificaciones y automatización (WhatsApp API)
 - ⏳ Autenticación de clientes en The Boutique
+- ⏳ Testing completo de todos los flujos
 
 ---
 
@@ -356,36 +370,36 @@ Validación Staff (rol Staff):
    - Integrar con sistema de pagos (Stripe)
    - Testing completo del flujo
 
-2. **Configurar Kioskos en Producción**
+2. **Completar Aperture (aperture.anchor23.mx)**
+   - Implementar autenticación de admin/staff/manager
+   - Gestión completa de staff (CRUD, horarios)
+   - Gestión de recursos y asignación
+   - Dashboard operativo completo
+   - Testing de APIs
+
+3. **Configurar Kioskos en Producción**
    - Crear kioskos para cada location
    - Configurar API keys en variables de entorno
    - Probar acceso desde pantalla táctil
    - Usar el sistema de enrollment en `/admin/enrollment`
 
-3. **Sistema de Enrollment**
-   - ✅ API route `/api/admin/locations` - Obtener locations
-   - ✅ API route `/api/admin/users` - Crear staff members
-   - ✅ API route `/api/admin/kiosks` - Crear kiosks
-   - ✅ Frontend `/admin/enrollment` - Interfaz de gestión
-   - ⏳ Configurar `ADMIN_ENROLLMENT_KEY` en variables de entorno
-
 ### Prioridad Media - Próximas 2 Semanas
 
-4. **Implementar API Routes para Bookings (Cliente)**
-   - `GET /api/bookings` - Listar bookings del cliente
-   - `POST /api/bookings` - Crear nuevo booking
-   - `PUT /api/bookings/{id}` - Modificar booking (solo staff/admin)
-   - `DELETE /api/bookings/{id}` - Cancelar booking
+4. **Implementar API Pública (api.anchor23.mx)**
+   - Horarios de operación públicos
+   - Lista de servicios disponibles
+   - Ubicaciones y contacto
+   - Información sin datos sensibles
 
-5. **Implementar Lógica de Disponibilidad**
-   - Función para buscar disponibilidad de staff
-   - Función para buscar disponibilidad de recursos
-   - Integración con `get_available_resources_with_priority()`
+5. **Sistema de Autenticación Completo**
+   - Supabase Auth para staff/admin
+   - Perfiles de cliente en The Boutique
+   - Gestión de sesiones
 
-6. **Implementar Notificaciones Básicas**
-   - Email de confirmación de booking
-   - Email de recordatorio (24h antes)
-   - Email de cancelación
+6. **Integración con Stripe**
+   - Webhooks para pagos
+   - Depósitos dinámicos ($200 vs 50%)
+   - Lógica de no-show y penalizaciones
 
 ### Prioridad Baja - Próximo Mes
 
@@ -393,7 +407,7 @@ Validación Staff (rol Staff):
    - API docs para aperture.anchor23.mx
    - API docs para api.anchor23.mx
    - Configuración de dominios wildcard
-   - Guías de despliegue
+   - Guías de despliegue y testing
 
 ---
 
