@@ -552,18 +552,18 @@ CREATE OR REPLACE FUNCTION generate_short_id()
 RETURNS VARCHAR(6) AS $$
 DECLARE
     chars VARCHAR(36) := '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    short_id VARCHAR(6);
+    v_short_id VARCHAR(6);
     attempts INT := 0;
     max_attempts INT := 10;
 BEGIN
     LOOP
-        short_id := '';
+        v_short_id := '';
         FOR i IN 1..6 LOOP
-            short_id := short_id || substr(chars, floor(random() * 36 + 1)::INT, 1);
+            v_short_id := v_short_id || substr(chars, floor(random() * 36 + 1)::INT, 1);
         END LOOP;
 
-        IF NOT EXISTS (SELECT 1 FROM bookings WHERE short_id = short_id) THEN
-            RETURN short_id;
+        IF NOT EXISTS (SELECT 1 FROM bookings WHERE short_id = v_short_id) THEN
+            RETURN v_short_id;
         END IF;
 
         attempts := attempts + 1;

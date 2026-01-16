@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/client'
+import { supabaseAdmin } from '@/lib/supabase/client'
 import { Kiosk } from '@/lib/db/types'
 
 export async function POST(request: NextRequest) {
   try {
-    const { api_key } = await request.json()
+    const body = await request.json()
+    console.log('Auth request body:', body)
+    const { api_key } = body
 
     if (!api_key || typeof api_key !== 'string') {
       return NextResponse.json(
@@ -13,7 +15,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { data: kiosk, error } = await supabase
+    console.log('Querying kiosk with api_key:', api_key)
+    const { data: kiosk, error } = await supabaseAdmin
       .from('kiosks')
       .select(`
         id,
@@ -21,7 +24,7 @@ export async function POST(request: NextRequest) {
         device_name,
         display_name,
         is_active,
-        location (
+        locations (
           id,
           name,
           timezone
@@ -31,7 +34,10 @@ export async function POST(request: NextRequest) {
       .eq('is_active', true)
       .single()
 
+    console.log('Kiosk query result:', { error, kiosk })
+
     if (error || !kiosk) {
+      console.log('Authentication failed:', error || 'Kiosk not found')
       return NextResponse.json(
         { error: 'Invalid API key or kiosk not active' },
         { status: 401 }
@@ -46,7 +52,7 @@ export async function POST(request: NextRequest) {
         device_name: kiosk.device_name,
         display_name: kiosk.display_name,
         is_active: kiosk.is_active,
-        location: kiosk.location
+        location: kiosk.locations
       }
     })
   } catch (error) {

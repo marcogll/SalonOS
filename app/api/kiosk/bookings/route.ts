@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/client'
+import { supabaseAdmin } from '@/lib/supabase/client'
 
 async function validateKiosk(request: NextRequest) {
   const apiKey = request.headers.get('x-kiosk-api-key')
-  
+
   if (!apiKey) {
     return null
   }
 
-  const { data: kiosk } = await supabase
+  const { data: kiosk } = await supabaseAdmin
     .from('kiosks')
     .select('id, location_id, is_active')
     .eq('api_key', apiKey)
@@ -33,29 +33,9 @@ export async function GET(request: NextRequest) {
     const short_id = searchParams.get('short_id')
     const date = searchParams.get('date')
 
-    let query = supabase
+    let query = supabaseAdmin
       .from('bookings')
-      .select(`
-        id,
-        short_id,
-        status,
-        start_time_utc,
-        end_time_utc,
-        service (
-          id,
-          name,
-          duration_minutes
-        ),
-        resource (
-          id,
-          name,
-          type
-        ),
-        staff (
-          id,
-          display_name
-        )
-      `)
+      .select()
       .eq('location_id', kiosk.location_id)
       .in('status', ['pending', 'confirmed'])
 
@@ -121,7 +101,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { data: service, error: serviceError } = await supabase
+    const { data: service, error: serviceError } = await supabaseAdmin
       .from('services')
       .select('*')
       .eq('id', service_id)
@@ -139,7 +119,7 @@ export async function POST(request: NextRequest) {
     const endTime = new Date(startTime)
     endTime.setMinutes(endTime.getMinutes() + service.duration_minutes)
 
-    const { data: availableResources } = await supabase
+    const { data: availableResources } = await supabaseAdmin
       .rpc('get_available_resources_with_priority', {
         p_location_id: kiosk.location_id,
         p_start_time: startTime.toISOString(),
@@ -155,7 +135,7 @@ export async function POST(request: NextRequest) {
 
     const assignedResource = availableResources[0]
 
-    const { data: customer, error: customerError } = await supabase
+    const { data: customer, error: customerError } = await supabaseAdmin
       .from('customers')
       .upsert({
         email: customer_email,
@@ -175,7 +155,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { data: booking, error: bookingError } = await supabase
+    const { data: booking, error: bookingError } = await supabaseAdmin
       .from('bookings')
       .insert({
         customer_id: customer.id,
@@ -191,28 +171,7 @@ export async function POST(request: NextRequest) {
         is_paid: false,
         notes
       })
-      .select(`
-        id,
-        short_id,
-        status,
-        start_time_utc,
-        end_time_utc,
-        service (
-          id,
-          name,
-          duration_minutes,
-          base_price
-        ),
-        resource (
-          id,
-          name,
-          type
-        ),
-        staff (
-          id,
-          display_name
-        )
-      `)
+      .select('id, short_id, status, start_time_utc, end_time_utc')
       .single()
 
     if (bookingError || !booking) {
@@ -224,11 +183,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      booking: {
-        ...booking,
-        resource_name: assignedResource.resource_name,
-        resource_type: assignedResource.resource_type
-      }
+      booking,
+      service_name: service.name,
+      resource_name: assignedResource.resource_name,
+      resource_type: assignedResource.resource_type
     }, { status: 201 })
   } catch (error) {
     console.error('Kiosk bookings POST error:', error)

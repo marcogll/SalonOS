@@ -55,18 +55,18 @@ CREATE OR REPLACE FUNCTION generate_kiosk_api_key()
 RETURNS VARCHAR(64) AS $$
 DECLARE
     chars VARCHAR(62) := 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    api_key VARCHAR(64);
+    v_api_key VARCHAR(64);
     attempts INT := 0;
     max_attempts INT := 10;
 BEGIN
     LOOP
-        api_key := '';
+        v_api_key := '';
         FOR i IN 1..64 LOOP
-            api_key := api_key || substr(chars, floor(random() * 62 + 1)::INT, 1);
+            v_api_key := v_api_key || substr(chars, floor(random() * 62 + 1)::INT, 1);
         END LOOP;
 
-        IF NOT EXISTS (SELECT 1 FROM kiosks WHERE api_key = api_key) THEN
-            RETURN api_key;
+        IF NOT EXISTS (SELECT 1 FROM kiosks WHERE api_key = v_api_key) THEN
+            RETURN v_api_key;
         END IF;
 
         attempts := attempts + 1;

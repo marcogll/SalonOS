@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/client'
+import { supabaseAdmin } from '@/lib/supabase/client'
 
 async function validateKiosk(request: NextRequest) {
   const apiKey = request.headers.get('x-kiosk-api-key')
-  
+
   if (!apiKey) {
     return null
   }
 
-  const { data: kiosk } = await supabase
+  const { data: kiosk } = await supabaseAdmin
     .from('kiosks')
     .select('id, location_id, is_active')
     .eq('api_key', apiKey)
@@ -34,7 +34,7 @@ export async function POST(
 
     const shortId = params.shortId
 
-    const { data: booking, error: fetchError } = await supabase
+    const { data: booking, error: fetchError } = await supabaseAdmin
       .from('bookings')
       .select('id, status, location_id')
       .eq('short_id', shortId)
@@ -61,31 +61,11 @@ export async function POST(
       )
     }
 
-    const { data: updatedBooking, error: updateError } = await supabase
+    const { data: updatedBooking, error: updateError } = await supabaseAdmin
       .from('bookings')
       .update({ status: 'confirmed' })
       .eq('id', booking.id)
-      .select(`
-        id,
-        short_id,
-        status,
-        start_time_utc,
-        end_time_utc,
-        service (
-          id,
-          name,
-          duration_minutes
-        ),
-        resource (
-          id,
-          name,
-          type
-        ),
-        staff (
-          id,
-          display_name
-        )
-      `)
+      .select('id, short_id, status, start_time_utc, end_time_utc')
       .single()
 
     if (updateError || !updatedBooking) {

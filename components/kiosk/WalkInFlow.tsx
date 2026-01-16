@@ -24,7 +24,7 @@ export function WalkInFlow({ apiKey, onComplete, onCancel }: WalkInFlowProps) {
     email: '',
     phone: ''
   })
-  const [availableResources, setAvailableResources] = useState<any[]>(null)
+  const [availableResources, setAvailableResources] = useState<any[] | null>(null)
   const [createdBooking, setCreatedBooking] = useState<any>(null)
 
   const loadServices = async () => {

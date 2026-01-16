@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/client'
+import { supabaseAdmin } from '@/lib/supabase/client'
 
 async function validateKiosk(request: NextRequest) {
   const apiKey = request.headers.get('x-kiosk-api-key')
@@ -8,7 +8,7 @@ async function validateKiosk(request: NextRequest) {
     return null
   }
 
-  const { data: kiosk } = await supabase
+  const { data: kiosk } = await supabaseAdmin
     .from('kiosks')
     .select('id, location_id, is_active')
     .eq('api_key', apiKey)
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    let resourceQuery = supabase
+    let resourceQuery = supabaseAdmin
       .rpc('get_available_resources_with_priority', {
         p_location_id: kiosk.location_id,
         p_start_time: startTime.toISOString(),
@@ -70,14 +70,14 @@ export async function GET(request: NextRequest) {
     let availableResources = resources || []
 
     if (service_id) {
-      const { data: service } = await supabase
+      const { data: service } = await supabaseAdmin
         .from('services')
         .select('requires_dual_artist')
         .eq('id', service_id)
         .single()
 
       if (service?.requires_dual_artist) {
-        availableResources = availableResources.filter(r => r.resource_type === 'room')
+        availableResources = availableResources.filter((r: any) => r.resource_type === 'room')
       }
     }
 
