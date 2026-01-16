@@ -5,74 +5,31 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
+import { Mail, CheckCircle } from 'lucide-react'
+import { useAuth } from '@/lib/auth/context'
 
 export default function LoginPage() {
-  const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login')
-  const [showPassword, setShowPassword] = useState(false)
+  const { signIn } = useAuth()
+  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    phone: ''
-  })
+  const [emailSent, setEmailSent] = useState(false)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-
-    try {
-      // En una implementación real, esto haría una llamada a la API de autenticación
-      // Por ahora, simulamos un login exitoso
-      setTimeout(() => {
-        localStorage.setItem('customer_token', 'mock-token-123')
-        alert('Login exitoso! Redirigiendo...')
-        window.location.href = '/perfil'
-      }, 1000)
-    } catch (error) {
-      console.error('Login error:', error)
-      alert('Error al iniciar sesión')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (formData.password !== formData.confirmPassword) {
-      alert('Las contraseñas no coinciden')
-      return
-    }
+    if (!email) return
 
     setLoading(true)
 
     try {
-      // En una implementación real, esto crearía la cuenta del cliente
-      // Por ahora, simulamos un registro exitoso
-      setTimeout(() => {
-        alert('Cuenta creada exitosamente! Ahora puedes iniciar sesión.')
-        setActiveTab('login')
-        setFormData({
-          ...formData,
-          password: '',
-          confirmPassword: ''
-        })
-      }, 1000)
+      const { error } = await signIn(email)
+      if (error) {
+        alert('Error al enviar el enlace mágico: ' + error.message)
+      } else {
+        setEmailSent(true)
+      }
     } catch (error) {
-      console.error('Signup error:', error)
-      alert('Error al crear la cuenta')
+      console.error('Auth error:', error)
+      alert('Error al enviar el enlace mágico')
     } finally {
       setLoading(false)
     }
@@ -93,213 +50,62 @@ export default function LoginPage() {
         <Card className="border-none" style={{ background: 'var(--soft-cream)' }}>
           <CardHeader>
             <CardTitle style={{ color: 'var(--charcoal-brown)' }}>
-              Bienvenido
+              {emailSent ? 'Enlace Enviado' : 'Bienvenido'}
             </CardTitle>
             <CardDescription>
-              Gestiona tus citas y accede a beneficios exclusivos
+              {emailSent
+                ? 'Revisa tu email y haz clic en el enlace para acceder'
+                : 'Ingresa tu email para recibir un enlace mágico de acceso'
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'login' | 'signup')}>
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
-                <TabsTrigger value="signup">Crear Cuenta</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 opacity-50" style={{ color: 'var(--mocha-taupe)' }} />
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="pl-10"
-                        style={{ borderColor: 'var(--mocha-taupe)' }}
-                        placeholder="tu@email.com"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="password">Contraseña</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 opacity-50" style={{ color: 'var(--mocha-taupe)' }} />
-                      <Input
-                        id="password"
-                        name="password"
-                        type={showPassword ? 'text' : 'password'}
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        className="pl-10 pr-10"
-                        style={{ borderColor: 'var(--mocha-taupe)' }}
-                        placeholder="Tu contraseña"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-3 opacity-50 hover:opacity-100"
-                        style={{ color: 'var(--mocha-taupe)' }}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full"
-                  >
-                    {loading ? 'Iniciando...' : 'Iniciar Sesión'}
-                  </Button>
-                </form>
-
-                <div className="mt-6 text-center">
-                  <Button
-                    variant="link"
-                    onClick={() => alert('Funcionalidad de recuperación próximamente')}
-                    className="text-sm"
-                    style={{ color: 'var(--mocha-taupe)' }}
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </Button>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="signup">
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="firstName">Nombre</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 opacity-50" style={{ color: 'var(--mocha-taupe)' }} />
-                        <Input
-                          id="firstName"
-                          name="firstName"
-                          value={formData.firstName}
-                          onChange={handleChange}
-                          required
-                          className="pl-10"
-                          style={{ borderColor: 'var(--mocha-taupe)' }}
-                          placeholder="María"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="lastName">Apellido</Label>
-                      <Input
-                        id="lastName"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                        required
-                        style={{ borderColor: 'var(--mocha-taupe)' }}
-                        placeholder="García"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="signupEmail">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 opacity-50" style={{ color: 'var(--mocha-taupe)' }} />
-                      <Input
-                        id="signupEmail"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="pl-10"
-                        style={{ borderColor: 'var(--mocha-taupe)' }}
-                        placeholder="tu@email.com"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="phone">Teléfono</Label>
+            {emailSent ? (
+              <div className="text-center space-y-4">
+                <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
+                <p className="text-sm" style={{ color: 'var(--charcoal-brown)' }}>
+                  Hemos enviado un enlace mágico a <strong>{email}</strong>
+                </p>
+                <p className="text-xs opacity-70" style={{ color: 'var(--charcoal-brown)' }}>
+                  El enlace expirará en 1 hora. Revisa tu bandeja de entrada y carpeta de spam.
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => setEmailSent(false)}
+                  className="w-full"
+                >
+                  Enviar otro enlace
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 opacity-50" style={{ color: 'var(--mocha-taupe)' }} />
                     <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      style={{ borderColor: 'var(--mocha-taupe)' }}
-                      placeholder="+52 844 123 4567"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="signupPassword">Contraseña</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 opacity-50" style={{ color: 'var(--mocha-taupe)' }} />
-                      <Input
-                        id="signupPassword"
-                        name="password"
-                        type={showPassword ? 'text' : 'password'}
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        className="pl-10 pr-10"
-                        style={{ borderColor: 'var(--mocha-taupe)' }}
-                        placeholder="Mínimo 8 caracteres"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-3 opacity-50 hover:opacity-100"
-                        style={{ color: 'var(--mocha-taupe)' }}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-                    <Input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type="password"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       required
+                      className="pl-10"
                       style={{ borderColor: 'var(--mocha-taupe)' }}
-                      placeholder="Repite tu contraseña"
+                      placeholder="tu@email.com"
                     />
                   </div>
-
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full"
-                  >
-                    {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
-                  </Button>
-                </form>
-
-                <div className="mt-6 p-4 rounded-lg" style={{ background: 'var(--bone-white)' }}>
-                  <p className="text-xs opacity-70" style={{ color: 'var(--charcoal-brown)' }}>
-                    Al crear una cuenta, aceptas nuestros{' '}
-                    <a href="/privacy-policy" className="underline hover:opacity-70" style={{ color: 'var(--deep-earth)' }}>
-                      términos de privacidad
-                    </a>{' '}
-                    y{' '}
-                    <a href="/legal" className="underline hover:opacity-70" style={{ color: 'var(--deep-earth)' }}>
-                      condiciones de servicio
-                    </a>.
-                  </p>
                 </div>
-              </TabsContent>
-            </Tabs>
+
+                <Button
+                  type="submit"
+                  disabled={loading || !email}
+                  className="w-full"
+                >
+                  {loading ? 'Enviando...' : 'Enviar Enlace Mágico'}
+                </Button>
+              </form>
+            )}
           </CardContent>
         </Card>
 

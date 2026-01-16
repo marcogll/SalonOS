@@ -47,6 +47,8 @@ Este proyecto se rige por los siguientes documentos:
 
 * **PRD (Documento Maestro)** → Definición de producto y reglas de negocio.
 * **README (este archivo)** → Guía técnica y operativa del repo.
+* **API.md** → Documentación completa de APIs y endpoints.
+* **TASKS.md** → Plan de ejecución por fases y estado actual.
 
 El PRD es la fuente de verdad funcional. El README es la guía de ejecución.
 
@@ -210,7 +212,7 @@ El sitio estará disponible en **http://localhost:2311**
 - ✅ Esquema de base de datos completo
 - ✅ Sistema de roles y permisos RLS
 - ✅ Generadores de Short ID y códigos de invitación
-- ✅ Sistema de kiosko completo
+- ✅ Sistema de kiosko completo con enrollment
 - ✅ API routes para kiosko
 - ✅ Componentes UI para kiosko
 - ✅ Actualización de recursos con códigos estandarizados
@@ -219,7 +221,17 @@ El sitio estará disponible en **http://localhost:2311**
 - ✅ Sistema de disponibilidad (staff, recursos, bloques)
 - ✅ API routes de disponibilidad
 - ✅ API de reservas para clientes (POST/GET)
-- ✅ HQ Dashboard con calendario multi-columna
+- ✅ HQ Dashboard (Aperture) con gestión de staff y recursos
+- ✅ Reportes de ventas, pagos y nómina
+- ✅ Gestión de permisos por roles
+- ✅ Integración con Stripe para pagos y depósitos
+- ✅ Autenticación completa (clientes con magic links, staff/admin)
+- ✅ The Boutique - Frontend de reservas completo
+  - Página de selección de servicios (/booking/servicios)
+  - Página de confirmación de reserva (/booking/cita)
+  - API para obtener servicios (/api/services)
+  - API para obtener ubicaciones (/api/locations)
+  - Configuración de dominios wildcard en producción
 - ✅ Frontend institucional anchor23.mx completo
   - Landing page con hero, fundamento, servicios, testimoniales
   - Página de servicios
@@ -231,23 +243,18 @@ El sitio estará disponible en **http://localhost:2311**
   - Header y footer globales
 
 ### En Progreso 🚧
-- 🚧 The Boutique - Frontend de reservas (booking.anchor23.mx)
-  - ✅ Página de selección de servicios (/booking/servicios)
-  - ✅ Página de confirmación de reserva (/booking/cita)
-  - ✅ API para obtener servicios (/api/services)
-  - ✅ API para obtener ubicaciones (/api/locations)
-  - ⏳ Configuración de dominios wildcard en producción
+- 🚧 Lógica de no-show y penalizaciones automáticas
+- 🚧 Integración con Google Calendar
 
 ### Pendiente ⏳
-- ⏳ Implementar aperture.anchor23.mx - Backend para staff/manager/admin
 - ⏳ Implementar API pública (api.anchor23.mx)
-- ⏳ Implementar sistema de asignación de disponibilidad (staff management)
-- ⏳ Implementar autenticación para staff/manager/admin
-- ⏳ Integración con Google Calendar
-- ⏳ Integración con Stripe (pagos)
+- ⏳ Notificaciones por WhatsApp
+- ⏳ Recibos digitales por email
+- ⏳ Landing page para believers (booking público)
+- ⏳ The Vault (storage de fotos privadas)
 
 ### Fase Actual
-**Fase 1 — Cimientos y CRM**: 95% completado
+**Fase 1 — Cimientos y CRM**: 100% completado
 - Infraestructura base: 100%
 - Esquema de base de datos: 100%
 - Short ID & Invitaciones: 100%
@@ -257,12 +264,17 @@ El sitio estará disponible en **http://localhost:2311**
 - Sistema de Disponibilidad: 100%
 - Frontend Institucional: 100%
 
-**Fase 2 — Motor de Agendamiento**: 20% completado
+**Fase 2 — Motor de Agendamiento**: 80% completado
 - Disponibilidad dual capa: 100%
 - API de reservas: 100%
-- The Boutique: 20% (páginas básicas implementadas)
-- Integración Calendar: 0% (pendiente)
-- Integración Pagos: 0% (pendiente)
+- The Boutique: 100% (completo con pagos)
+- Integración Pagos (Stripe): 100%
+- Integración Calendar: 20% (en progreso)
+- Aperture Backend: 100%
+
+**Fase 3 — Pagos y Protección**: 70% completado
+- Stripe depósitos dinámicos: 100%
+- No-show logic: 40% (lógica implementada, automatización pendiente)
 
 **Advertencia:** No apto para producción. Migraciones y seeds en evolución.
 
@@ -290,13 +302,28 @@ Dominio institucional. Contenido estático, marca, narrativa y conversión inici
 
 **booking.anchor23.mx**
 - `/booking/servicios` - Página de selección de servicios con calendario
-- `/booking/cita` - Página de confirmación de reserva con formulario de cliente
+- `/booking/cita` - Página de confirmación de reserva con formulario de cliente y pagos
+- `/booking/login` - Autenticación con magic links
+- `/booking/perfil` - Perfil de cliente con historial de citas
+- `/booking/mis-citas` - Gestión de citas
+
+**aperture.anchor23.mx** (Backend administrativo)
+- `/aperture` - Dashboard con estadísticas y gestión
+- `/aperture` (tabs: Dashboard, Staff, Resources, Reports, Permissions)
+- Reportes: Ventas, Pagos, Nómina
+- Gestión de permisos por roles
+
+**kiosk.anchor23.mx**
+- Sistema completo de kiosko con autenticación por API key
 
 ### Tecnologías
 - Next.js 14 (App Router) con SSG
 - Tailwind CSS para estilos
 - Lucide React para iconos
 - HTML semántico
+
+### APIs
+Ver documentación completa en `API.md` para todos los endpoints disponibles.
 
 ### Principios de Diseño
 - HTML semántico

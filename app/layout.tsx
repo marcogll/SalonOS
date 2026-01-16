@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { AuthProvider } from '@/lib/auth/context'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -26,32 +27,34 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className={`${inter.variable} font-sans`}>
-        {typeof window === 'undefined' && (
-          <header className="site-header">
-            <nav className="nav-primary">
-              <div className="logo">
-                <a href="/">ANCHOR:23</a>
+        <AuthProvider>
+          {typeof window === 'undefined' && (
+            <header className="site-header">
+              <nav className="nav-primary">
+                <div className="logo">
+                  <a href="/">ANCHOR:23</a>
+                </div>
+
+              <ul className="nav-links">
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/historia">Nosotros</a></li>
+                <li><a href="/servicios">Servicios</a></li>
+              </ul>
+
+              <div className="nav-actions flex items-center gap-4">
+                <a href="/booking/servicios" className="btn-secondary">
+                  Book Now
+                </a>
+                <a href="/membresias" className="btn-primary">
+                  Memberships
+                </a>
               </div>
+              </nav>
+            </header>
+          )}
 
-            <ul className="nav-links">
-              <li><a href="/">Inicio</a></li>
-              <li><a href="/historia">Nosotros</a></li>
-              <li><a href="/servicios">Servicios</a></li>
-            </ul>
-
-            <div className="nav-actions flex items-center gap-4">
-              <a href="/booking/servicios" className="btn-secondary">
-                Book Now
-              </a>
-              <a href="/membresias" className="btn-primary">
-                Memberships
-              </a>
-            </div>
-            </nav>
-          </header>
-        )}
-
-        <main>{children}</main>
+          <main>{children}</main>
+        </AuthProvider>
 
         <footer className="site-footer">
           <div className="footer-brand">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -8,18 +9,41 @@ import { Label } from '@/components/ui/label'
 import { Calendar, Clock, MapPin, User, Mail, Phone } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { useAuth } from '@/lib/auth/context'
 
 export default function PerfilPage() {
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [customer, setCustomer] = useState<any>(null)
   const [bookings, setBookings] = useState<any[]>([])
   const [isEditing, setIsEditing] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [pageLoading, setPageLoading] = useState(false)
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
     email: '',
     phone: ''
   })
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/booking/login')
+    }
+  }, [user, authLoading, router])
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[var(--bone-white)] pt-24 flex items-center justify-center">
+        <div className="text-center">
+          <p>Cargando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
 
   useEffect(() => {
     loadCustomerProfile()
@@ -82,7 +106,7 @@ export default function PerfilPage() {
   }
 
   const handleSaveProfile = async () => {
-    setLoading(true)
+    setPageLoading(true)
     try {
       // En una implementación real, esto actualizaría el perfil del cliente
       setCustomer({
@@ -95,7 +119,7 @@ export default function PerfilPage() {
       console.error('Error updating profile:', error)
       alert('Error al actualizar el perfil')
     } finally {
-      setLoading(false)
+      setPageLoading(false)
     }
   }
 
@@ -209,10 +233,10 @@ export default function PerfilPage() {
                       className="mt-1"
                     />
                   </div>
-                  <div className="flex gap-2">
-                    <Button onClick={handleSaveProfile} disabled={loading}>
-                      {loading ? 'Guardando...' : 'Guardar'}
-                    </Button>
+                   <div className="flex gap-2">
+                     <Button onClick={handleSaveProfile} disabled={pageLoading}>
+                       {pageLoading ? 'Guardando...' : 'Guardar'}
+                     </Button>
                     <Button variant="outline" onClick={() => setIsEditing(false)}>
                       Cancelar
                     </Button>
