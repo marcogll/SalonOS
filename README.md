@@ -102,11 +102,16 @@ El PRD es la fuente de verdad funcional. El README es la guía de ejecución.
 │   │   ├── privacy-policy/        # Política de privacidad
 │   │   └── legal/                # Términos y condiciones
 │   ├── boutique/                  # booking.anchor23.mx - Frontend de reservas
+│   │   ├── servicios/             # Selección de servicios
+│   │   ├── cita/                 # Confirmación de reserva
+│   │   └── confirmacion/          # Confirmación de reserva (pendiente)
 │   ├── hq/                       # Dashboard administrativo
 │   ├── kiosk/                    # kiosk.anchor23.mx - Sistema de autoservicio
 │   └── api/                      # API routes
 │       ├── kiosk/                 # Endpoints para kiosko
 │       ├── bookings/               # Gestión de reservas
+│       ├── services/               # API para obtener servicios
+│       ├── locations/              # API para obtener ubicaciones
 │       ├── availability/           # Sistema de disponibilidad
 │       └── admin/                 # Endpoints administrativos
 ├── components/                    # Componentes UI reutilizables
@@ -227,14 +232,19 @@ El sitio estará disponible en **http://localhost:2311**
 
 ### En Progreso 🚧
 - 🚧 The Boutique - Frontend de reservas (booking.anchor23.mx)
-- 🚧 Configuración de dominios wildcard en producción
+  - ✅ Página de selección de servicios (/booking/servicios)
+  - ✅ Página de confirmación de reserva (/booking/cita)
+  - ✅ API para obtener servicios (/api/services)
+  - ✅ API para obtener ubicaciones (/api/locations)
+  - ⏳ Configuración de dominios wildcard en producción
 
 ### Pendiente ⏳
+- ⏳ Implementar aperture.anchor23.mx - Backend para staff/manager/admin
+- ⏳ Implementar API pública (api.anchor23.mx)
+- ⏳ Implementar sistema de asignación de disponibilidad (staff management)
+- ⏳ Implementar autenticación para staff/manager/admin
 - ⏳ Integración con Google Calendar
 - ⏳ Integración con Stripe (pagos)
-- ⏳ The Vault (storage de fotos privadas)
-- ⏳ Notificaciones y automatización (WhatsApp API)
-- ⏳ Autenticación de clientes en The Boutique
 
 ### Fase Actual
 **Fase 1 — Cimientos y CRM**: 95% completado
@@ -247,10 +257,10 @@ El sitio estará disponible en **http://localhost:2311**
 - Sistema de Disponibilidad: 100%
 - Frontend Institucional: 100%
 
-**Fase 2 — Motor de Agendamiento**: 60% completado
+**Fase 2 — Motor de Agendamiento**: 20% completado
 - Disponibilidad dual capa: 100%
 - API de reservas: 100%
-- The Boutique: 0% (pendiente)
+- The Boutique: 20% (páginas básicas implementadas)
 - Integración Calendar: 0% (pendiente)
 - Integración Pagos: 0% (pendiente)
 
@@ -264,11 +274,12 @@ Dominio institucional. Contenido estático, marca, narrativa y conversión inici
 
 ### Arquitectura de Dominios
 - `anchor23.mx` - Frontend institucional (landing page + páginas informativas)
-- `booking.anchor23.mx` - The Boutique (frontend de reservas) - **Pendiente**
+- `booking.anchor23.mx` - The Boutique (frontend de reservas) - **En Progreso 20%**
 - `kiosk.anchor23.mx` - The Kiosk (pantallas táctiles)
 
 ### Páginas Implementadas
-- `/` - Landing page (Hero, Fundamento, Servicios Preview, Testimoniales)
+**anchor23.mx**
+- `/` - Landing page (Hero, Fundamento, Servicios Preview, Testimonios)
 - `/servicios` - Grid de servicios con descripciones
 - `/historia` - Historia, filosofía y significado de la marca
 - `/contacto` - Formulario de contacto con información
@@ -276,6 +287,10 @@ Dominio institucional. Contenido estático, marca, narrativa y conversión inici
 - `/membresias` - 3 tiers (Gold, Black, VIP) con solicitudes
 - `/privacy-policy` - Política de privacidad completa
 - `/legal` - Términos y condiciones
+
+**booking.anchor23.mx**
+- `/booking/servicios` - Página de selección de servicios con calendario
+- `/booking/cita` - Página de confirmación de reserva con formulario de cliente
 
 ### Tecnologías
 - Next.js 14 (App Router) con SSG
