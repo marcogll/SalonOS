@@ -56,6 +56,8 @@ Este proyecto se rige por los siguientes documentos:
 * **[docs/STRIPE_SETUP.md](./docs/STRIPE_SETUP.md)** → Guía de integración de pagos con Stripe.
 * **[docs/site_requirements.md](./docs/site_requirements.md)** → Requisitos técnicos del proyecto.
 * **[docs/ANCHOR23_FRONTEND.md](./docs/ANCHOR23_FRONTEND.md)** → Documentación del frontend institucional.
+* **[docs/APERTURE_SQUARE_UI.md](./docs/APERTURE_SQUARE_UI.md)** → Guía de estilo Square UI para Aperture (HQ Dashboard).
+* **[docs/DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md)** → Sistema de diseño completo para AnchorOS.
 * **[docs/DOMAIN_CONFIGURATION.md](./docs/DOMAIN_CONFIGURATION.md)** → Configuración de dominios y subdominios.
 * **[docs/KIOSK_SYSTEM.md](./docs/KIOSK_SYSTEM.md)** → Documentación completa del sistema de kiosko.
 * **[docs/KIOSK_IMPLEMENTATION.md](./docs/KIOSK_IMPLEMENTATION.md)** → Guía rápida de implementación del kiosko.
@@ -76,15 +78,15 @@ El PRD es la fuente de verdad funcional. El README es la guía de ejecución.
 ### Dominios
 
 * `anchor23.mx` - Frontend institucional (landing page + páginas informativas)
-* `booking.anchor23.mx` - Frontend de reservas (The Boutique) - **Pendiente**
+* `booking.anchor23.mx` - Frontend de reservas (The Boutique) - **En Progreso 90%**
 * `kiosk.anchor23.mx` - Sistema de autoservicio (The Kiosk)
-* `aperture.anchor23.mx` - Dashboard administrativo y CRM (The HQ)
+* `aperture.anchor23.mx` - Dashboard administrativo y CRM (The HQ) - **0% completado (redefinido)**
 * `api.anchor23.mx` - API pública para integraciones externas
 
 ### Experiencias
 
 * **The Boutique**: Frontend de reserva para clientas.
-* **The HQ**: Dashboard administrativo y CRM interno.
+* **The HQ** (Aperture): Dashboard administrativo y CRM interno con 6 pantallas principales.
 * **The Kiosk**: Sistema de autoservicio en pantalla táctil para confirmación de citas y walk-ins.
 
 ### Principios
@@ -99,7 +101,7 @@ El PRD es la fuente de verdad funcional. El README es la guía de ejecución.
 ## 5. Stack Tecnológico
 
 * **Frontend**: Next.js 14 (App Router)
-* **UI / Estilos**: Tailwind CSS + Framer Motion
+* **UI / Estilos**: Tailwind CSS + Radix UI + Square UI custom styling
 * **Backend**: Supabase (PostgreSQL + Auth + RLS)
 * **Pagos**: Stripe SDK
 * **Calendario**: Google Calendar API v3 (Service Account)
@@ -126,7 +128,38 @@ El PRD es la fuente de verdad funcional. El README es la guía de ejecución.
 │   │   ├── servicios/             # Selección de servicios
 │   │   ├── cita/                 # Confirmación de reserva
 │   │   └── confirmacion/          # Confirmación de reserva (pendiente)
-│   ├── hq/                       # Dashboard administrativo
+│   ├── aperture/                   # aperture.anchor23.mx - Dashboard administrativo
+│   │   ├── page.tsx                # Dashboard Home
+│   │   ├── calendar/
+│   │   │   └── page.tsx            # Calendario Maestro
+│   │   ├── staff/
+│   │   │   ├── page.tsx            # Gestión de Staff
+│   │   │   └── payroll/
+│   │   │       └── page.tsx        # Cálculo de Nómina
+│   │   ├── clients/
+│   │   │   ├── page.tsx            # CRM de Clientes
+│   │   │   ├── [id]/
+│   │   │   │   └── page.tsx        # Perfil de Cliente
+│   │   │   └── gallery/
+│   │   │       └── page.tsx        # Galería de Fotos
+│   │   ├── loyalty/
+│   │   │   ├── page.tsx            # Sistema de Puntos
+│   │   │   ├── memberships/
+│   │   │   │   └── page.tsx        # Membresías
+│   │   │   └── rewards/
+│   │   │       └── page.tsx        # Recompensas
+│   │   ├── pos/
+│   │   │   ├── page.tsx            # Punto de Venta
+│   │   │   └── checkout/
+│   │   │       └── page.tsx        # Procesar cobro
+│   │   ├── finance/
+│   │   │   ├── page.tsx            # Finanzas
+│   │   │   └── close-day/
+│   │   │       └── page.tsx        # Cierre de Caja
+│   │   └── admin/
+│   │       └── settings/
+│   │           └── page.tsx        # Marketing y Configuración
+│   ├── hq/                         # Dashboard administrativo (antiguo, será reemplazado)
 │   ├── kiosk/                    # kiosk.anchor23.mx - Sistema de autoservicio
 │   └── api/                      # API routes
 │       ├── kiosk/                 # Endpoints para kiosko
@@ -317,12 +350,18 @@ El sitio estará disponible en **http://localhost:2311**
 - Stripe depósitos dinámicos: 100%
 - No-show logic: 40% (lógica implementada, automatización pendiente)
 
-**Fase 4 — HQ Dashboard**: 10% completado
-- Aperture dashboard básico: 100% (existe pero incompleto)
-- Autenticación staff/admin: 40% (página login existe, needs Supabase Auth integration)
-- Calendario Multi-Columna: 0% (pendiente)
-- Gestión Operativa: 20% (APIs existentes, UI incompleta)
-- The Vault: 0% (pendiente)
+**Fase 4 — HQ Dashboard**: 0% completado (REDEFINIDO con especificaciones técnicas completas)
+- Documento de especificaciones técnicas creado
+- Plan completo de 7 fases con ~136-171 horas estimado
+- Stack UI: Radix UI + Tailwind CSS + Square UI custom styling
+- Especificaciones completas para 6 pantallas principales:
+  1. Dashboard Home (KPI Cards, Gráfico, Top Performers, Activity Feed)
+  2. Calendario Maestro (Drag & Drop, Resize, Filtros dinámicos)
+  3. Miembros del Equipo y Nómina (CRUD Staff, Comisiones, Nómina, Turnos)
+  4. Clientes y Fidelización (CRM, Galería VIP, Membresías, Puntos)
+  5. Ventas, Pagos y Facturación (POS, Cierre de Caja, Finanzas)
+  6. Marketing y Configuración (Campañas, Precios Inteligentes, Integraciones)
+- Pendiente implementación completa
 
 **Fase 5 — Automatización y Lanzamiento**: 5% completado
 - Notificaciones WhatsApp: 0% (variables configuradas, no implementado)
@@ -333,7 +372,63 @@ El sitio estará disponible en **http://localhost:2311**
 
 ---
 
-## 11. Deployment y Producción
+## 11. Aperture - HQ Dashboard
+
+Aperture (aperture.anchor23.mx) es el dashboard administrativo y CRM interno de AnchorOS. Diseñado con estilo Square UI y construido con Radix UI + Tailwind CSS.
+
+### Especificaciones Técnicas
+- **Documento de estilo**: [docs/APERTURE_SQUARE_UI.md](docs/APERTURE_SQUARE_UI.md)
+- **Sistema de diseño**: [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)
+- **Stack UI**: Radix UI + Tailwind CSS + Square UI custom styling
+
+### Plan de Implementación
+El plan completo de 7 fases está documentado en [TASKS.md](TASKS.md) con:
+- Tiempos estimados: ~136-171 horas (~17-21 días hábiles)
+- Estructura detallada de cada fase
+- Sprint structure recomendado
+
+### Pantallas Principales
+
+#### 1. Dashboard Home (Vista Pájaro)
+- KPI Cards (4): Ventas Totales, Comparativa Semanal, Citas Totales, Nuevos Clientes
+- Gráfico de Rendimiento (líneas/áreas suaves)
+- Tabla "Top Performers" (Staff y Servicios)
+- Feed de Actividad Reciente (scroll infinito)
+
+#### 2. Calendario Maestro (Agenda Dinámica)
+- Estructura: Columnas por trabajador, filas por bloques de 15/30 min
+- Drag & Drop (mover entre horas y trabajadores)
+- Resize de bloques (incrementos de 15 min)
+- Filtros dinámicos (Sucursal, Staff)
+- Indicadores visuales (línea tiempo actual, bloqueos, tooltips)
+
+#### 3. Miembros del Equipo y Nómina
+- Gestión de Staff (CRUD con foto, rating, toggle activo)
+- Configuración de Comisiones (% por servicio y producto)
+- Cálculo de Nómina (Sueldo Base + Comisiones + Propinas)
+- Calendario de Turnos (vista semanal)
+
+#### 4. Clientes y Fidelización (Loyalty)
+- CRM de Clientes (búsqueda fonética, histórico, notas técnicas)
+- Galería de Fotos (SOLO VIP/Black/Gold) - Good to have: control de calidad
+- Sistema de Membresías (planes, créditos)
+- Sistema de Puntos (independiente de tiers, expiran después de X meses)
+
+#### 5. Ventas, Pagos y Facturación
+- POS (Punto de Venta) completo (puede crear nuevas citas + procesar pagos)
+- Opciones de pago: Efectivo, Transferencia, Membership, Tarjeta, Giftcard, PIA
+- NO imprimir recibos (enviar email o dashboard cliente)
+- Cierre de Caja (resumen diario, PDF automático)
+- Finanzas (gastos, margen neto)
+
+#### 6. Marketing y Configuración
+- Campañas (promociones masivas Email/WhatsApp)
+- Precios Inteligentes (configurables por servicio, aplicables ambos canales)
+- Integraciones Placeholder (Google, Instagram/FB Shopping) - Good to have, no priority
+
+---
+
+## 12. Deployment y Producción
 
 ### Requisitos para Producción
 - VPS o cloud provider (Vercel recomendado para Next.js)
@@ -383,7 +478,91 @@ Dominio institucional. Contenido estático, marca, narrativa y conversión inici
 - `kiosk.anchor23.mx` - The Kiosk (pantallas táctiles)
 
 ### Páginas Implementadas
+
 **anchor23.mx**
+- `/` - Landing page (Hero, Fundamento, Servicios Preview, Testimonios)
+- `/servicios` - Grid de servicios con descripciones
+- `/historia` - Historia, filosofía y significado de la marca
+- `/contacto` - Formulario de contacto con información
+- `/franquicias` - Modelo de franquicias con solicitud
+- `/membresias` - 3 tiers (Gold, Black, VIP) con solicitudes
+- `/privacy-policy` - Política de privacidad completa
+- `/legal` - Términos y condiciones
+
+**booking.anchor23.mx**
+- `/booking/servicios` - Página de selección de servicios con calendario
+- `/booking/cita` - Flujo de reserva en pasos:
+  1. Búsqueda de cliente por email/telefono
+  2. Confirmación de datos personales
+  3. Pago del depósito (mock actualmente)
+- `/booking/registro` - Registro de nuevos clientes con:
+  - Nombre y apellido
+  - Email y teléfono
+  - Fecha de nacimiento
+  - Ocupación (lista desplegable)
+- `/booking/login` - Autenticación con magic links
+- `/booking/perfil` - Perfil de cliente con historial de citas
+- `/booking/mis-citas` - Gestión de citas
+
+**aperture.anchor23.mx** (Pendiente implementación completa - Plan 0%)
+- `/aperture` - Dashboard Home con:
+  - KPI Cards (Ventas, Citas, Clientes, Gráfico)
+  - Gráfico de Rendimiento (líneas/áreas suaves)
+  - Tabla "Top Performers" (Staff y Servicios)
+  - Feed de Actividad Reciente (scroll infinito)
+- `/aperture/calendar` - Calendario Maestro con:
+  - Columnas por trabajador, filas por bloques de 15/30 min
+  - Drag & Drop (mover entre horas y trabajadores)
+  - Resize de bloques (incrementos de 15 min)
+  - Filtros dinámicos (Sucursal, Staff)
+  - Indicadores visuales (línea tiempo actual, bloqueos, tooltips)
+- `/aperture/staff` - Gestión de Staff con:
+  - Cards por trabajador (foto, puesto, rating, toggle activo)
+  - CRUD completo
+  - Configuración de Comisiones (% por servicio y producto)
+  - Calendario de Turnos (vista semanal)
+- `/aperture/staff/payroll` - Cálculo de Nómina:
+  - Tabla: Nombre | Sueldo Base | Comisiones Servicios | Comisiones Productos | Propinas | Total a Pagar
+  - Exportar a Excel/CSV/PDF
+- `/aperture/clients` - CRM de Clientes:
+  - Tabla con búsqueda fonética
+  - Perfil completo de cliente (personal_data, bookings_history, purchases_history, notes)
+  - Notas técnicas ("Alérgica a tal marca", "Prefiere café")
+- `/aperture/clients/[id]` - Perfil de Cliente:
+  - Historial de citas y compras
+  - Galería de fotos (SOLO VIP/Black/Gold)
+  - Membresías y créditos
+- `/aperture/clients/[id]/gallery` - Galería de Fotos:
+  - SOLO para clientes VIP/Black/Gold
+  - Good to have: control de calidad, rastreabilidad de quejas
+- `/aperture/loyalty` - Sistema de Fidelización:
+  - Configuración de reglas (100 MXN = 1 Punto)
+  - Listado de recompensas canjeables
+- `/aperture/loyalty/memberships` - Sistema de Membresías:
+  - Creación de planes ("Plan VIP 4 Manicuras al mes")
+  - Control de "créditos" restantes en el perfil
+- `/aperture/loyalty/rewards` - Recompensas Canjeables
+- `/aperture/loyalty/points/[client_id]` - Puntos del cliente
+- `/aperture/pos` - Punto de Venta (POS):
+  - Interfaz táctil optimizada
+  - Selección de servicios/productos
+  - Categorías: Servicios, Productos de venta, Membresías, Giftcards
+  - Opciones de pago: Efectivo, Transferencia, Membership, Tarjeta, Giftcard, PIA
+  - Puede crear nuevas citas + procesar pagos
+  - NO imprimir recibos (enviar email o dashboard cliente)
+- `/aperture/pos/checkout` - Procesar cobro
+- `/aperture/finance` - Finanzas:
+  - Gestión de gastos (egresos: renta, insumos)
+  - Cálculo de margen de beneficio neto
+  - Reporte mensual
+- `/aperture/finance/close-day` - Cierre de Caja:
+  - Resumen diario: efectivo, tarjeta, transferencias
+  - Botón "Cerrar Día" genera reporte PDF automático
+  - Múltiples cajeros con control de movimientos
+- `/aperture/admin/settings` - Marketing y Configuración:
+  - Campañas (promociones masivas Email/WhatsApp)
+  - Precios Inteligentes (reglas para horas pico/bajas)
+  - Integraciones Placeholder (Google, Instagram/FB Shopping)
 - `/` - Landing page (Hero, Fundamento, Servicios Preview, Testimonios)
 - `/servicios` - Grid de servicios con descripciones
 - `/historia` - Historia, filosofía y significado de la marca
@@ -436,8 +615,12 @@ Cada ubicación tiene horarios de apertura personalizados por día de la semana 
 - Los horarios se pueden personalizar por ubicación individualmente
 
 **aperture.anchor23.mx** (Backend administrativo)
-- `/aperture` - Dashboard con estadísticas y gestión
-- `/aperture` (tabs: Dashboard, Staff, Resources, Reports, Permissions)
+- `/aperture` - Dashboard Home con KPI Cards, Gráfico, Top Performers, Activity Feed
+- `/aperture/calendar` - Calendario Maestro con Drag & Drop, Resize, Filtros dinámicos
+- `/aperture/staff` - Gestión de Staff (CRUD, Comisiones, Nómina, Turnos)
+- `/aperture/clients` - CRM de Clientes, Galería VIP, Membresías, Puntos
+- `/aperture/pos` - Punto de Venta (POS), Cierre de Caja, Finanzas
+- `/aperture/admin` - Marketing, Precios Inteligentes, Integraciones
 - Reportes: Ventas, Pagos, Nómina
 - Gestión de permisos por roles
 
