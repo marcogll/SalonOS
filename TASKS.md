@@ -463,7 +463,7 @@ Validación Staff (rol Staff):
 - Sistema de disponibilidad (staff, recursos, bloques)
 - API routes de disponibilidad
 - API de reservas para clientes (POST/GET)
-- HQ Dashboard con calendario multi-columna
+- HQ Dashboard básico (Aperture) - EXISTE pero incompleto
 - Frontend institucional anchor23.mx completo
   - Landing page con hero, fundamento, servicios, testimoniales
   - Página de servicios
@@ -497,8 +497,9 @@ Validación Staff (rol Staff):
   - ✅ API para recursos (/api/aperture/resources)
   - ✅ API para dashboard (/api/aperture/dashboard)
   - ✅ Página principal de admin (/aperture)
-  - ⏳ Autenticación de admin/staff/manager
-  - ⏳ Gestión completa de staff
+  - ❌ API para estadísticas (/api/aperture/stats) - FALTA IMPLEMENTAR
+  - ⏳ Autenticación de admin/staff/manager (login existe, needs Supabase Auth)
+  - ⏳ Gestión completa de staff (CRUD, horarios)
   - ⏳ Gestión de recursos y asignación
 
 ### ⏳ Pendiente
@@ -514,54 +515,121 @@ Validación Staff (rol Staff):
 
 ---
 
-## PRÓXIMAS TARES PRIORITARIAS
+## PRÓXIMAS TAREAS PRIORITARIAS
 
-### Prioridad Alta - Esta Semana (Timeline: 7 días)
+### 🔴 CRÍTICO - Bloquea Funcionamiento (Timeline: 1-2 días)
 
-1. **Terminar The Boutique (booking.anchor23.mx)** - 3-4 días
-   - Implementar autenticación de clientes (depende de: Supabase Auth configurado)
-   - Completar flujo de reserva (depende de: auth implementado)
-   - Integrar con sistema de pagos (Stripe) (depende de: webhooks Stripe)
-   - Testing completo del flujo (depende de: integración completa)
+1. **Implementar `GET /api/aperture/stats`** - ~30 min
+   - Dashboard de Aperture espera este endpoint
+   - Sin esto, estadísticas no se cargan
+   - Respuesta esperada: `{ success: true, stats: { totalBookings, totalRevenue, completedToday, upcomingToday } }`
+   - Ubicación: `app/api/aperture/stats/route.ts`
 
-2. **Completar Aperture (aperture.anchor23.mx)** - 4-5 días
-   - Implementar autenticación de admin/staff/manager (depende de: Supabase Auth)
-   - Gestión completa de staff (CRUD, horarios) (depende de: auth implementado, APIs existentes)
-   - Gestión de recursos y asignación (depende de: staff gestión)
-   - Dashboard operativo completo (depende de: gestión implementada)
-   - Testing de APIs (depende de: todas las funciones)
+2. **Implementar autenticación para Aperture** - ~2-3 horas
+   - Integración con Supabase Auth para roles admin/manager/staff
+   - Protección de rutas de Aperture (middleware)
+   - Session management
+   - Página login ya existe en `/app/aperture/login/page.tsx`, needs Supabase Auth integration
 
-3. **Configurar Kioskos en Producción** - 1-2 días
-   - Crear kioskos para cada location (depende de: migraciones en prod)
-   - Configurar API keys en variables de entorno (depende de: env setup)
-   - Probar acceso desde pantalla táctil (depende de: kioskos creados)
-   - Usar el sistema de enrollment en `/admin/enrollment` (depende de: admin auth)
+3. **Implementar reseteo semanal de invitaciones** - ~2-3 horas
+   - Script/Edge Function que se ejecuta cada Lunes 00:00 UTC
+   - Resetea `weekly_invitations_used` a 0 para todos los clientes Tier Gold
+   - Registra acción en `audit_logs`
+   - Documentado en TASKS.md línea 211 pero NO implementado
+   - Impacto: Membresías Gold no funcionan correctamente sin esto
 
-### Prioridad Media - Próximas 2 Semanas (Timeline: 14 días)
+### 🟡 ALTA - Documentación y Diseño (Timeline: 1 semana)
 
-4. **Implementar API Pública (api.anchor23.mx)** - 3-4 días
-   - Horarios de operación públicos (depende de: locations table)
-   - Lista de servicios disponibles (depende de: services table, RLS público)
-   - Ubicaciones y contacto (depende de: locations table)
-   - Información sin datos sensibles (depende de: RLS configurado)
+4. **Actualizar documentación con especificaciones técnicas completas** - ~4 horas
+   - Crear documento de especificaciones técnicas (`docs/APERATURE_SPECS.md`)
+   - Documentar respuesta a horas trabajadas (automático desde bookings)
+   - Definir estructura de POS completa
+   - Documentar sistema de múltiples cajeros
 
-5. **Sistema de Autenticación Completo** - 5-7 días
-   - Supabase Auth para staff/admin (depende de: roles configurados)
-   - Perfiles de cliente en The Boutique (depende de: auth cliente)
-   - Gestión de sesiones (depende de: Supabase Auth completo)
+5. **Actualizar APERTURE_SQUARE_UI.md con Radix UI** - ~1.5 horas
+   - Agregar sección "Stack Técnico"
+   - Documentar componentes Radix UI específicos
+   - Ejemplos de uso de Radix con estilizado Square UI
+   - Guía de accesibilidad Radix (ARIA attributes, keyboard navigation)
 
-6. **Integración con Stripe** - 4-5 días
-   - Webhooks para pagos (depende de: Stripe account, endpoints)
-   - Depósitos dinámicos ($200 vs 50%) (depende de: webhooks)
-   - Lógica de no-show y penalizaciones (depende de: webhooks, bookings logic)
+6. **Actualizar API.md con rutas implementadas** - ~1 hora
+   - Rutas a agregar que existen pero NO están en API.md:
+     - `GET /api/availability/blocks`
+     - `GET /api/public/availability`
+     - `POST /api/availability/staff`
+     - `POST /api/kiosk/walkin`
 
-### Prioridad Baja - Próximo Mes (Timeline: 30 días)
+### 🟢 MEDIA - Componentes y Features (Timeline: 6-8 semanas)
 
-7. **Documentar nuevos endpoints y configuración** - 7-10 días
-   - API docs para aperture.anchor23.mx (depende de: APIs completas)
-   - API docs para api.anchor23.mx (depende de: API pública implementada)
-   - Configuración de dominios wildcard (depende de: dominio setup)
-   - Guías de despliegue y testing (depende de: sistema completo)
+7. **Rediseñar Aperture completo con Radix UI** - ~136-171 horas
+   - **FASE 0**: Documentación y Configuración (~6 horas)
+   - **FASE 1**: Componentes Base con Radix UI (~20-25 horas)
+     - Instalar Radix UI
+     - Crear/actualizar componentes base (Button, Card, Input, Select, Tabs, etc.)
+     - Crear componentes específicos de Aperture (StatsCard, BookingCard, etc.)
+   - **FASE 2**: Dashboard Home (~15-20 horas)
+     - KPI Cards (Ventas, Citas, Clientes, Gráfico)
+     - Tabla "Top Performers"
+     - Feed de Actividad Reciente
+     - API: `/api/aperture/stats`
+   - **FASE 3**: Calendario Maestro (~25-30 horas)
+     - Columnas por trabajador, Drag & Drop, Resize de bloques
+     - Filtros dinámicos (Sucursal, Staff)
+     - Indicadores visuales (línea tiempo, bloqueos, tooltips)
+     - APIs: `/api/aperture/calendar`, `/api/aperture/bookings/[id]/reschedule`
+   - **FASE 4**: Miembros del Equipo y Nómina (~20-25 horas)
+     - Gestión de Staff (CRUD completo con foto, rating, toggle activo)
+     - Configuración de Comisiones (% por servicio y producto)
+     - Cálculo de Nómina (Sueldo Base + Comisiones + Propinas)
+     - Calendario de Turnos (vista semanal)
+     - APIs: `/api/aperture/staff` (PATCH, DELETE), `/api/aperture/payroll`
+   - **FASE 5**: Clientes y Fidelización (Loyalty) (~20-25 horas)
+     - CRM de Clientes (búsqueda fonética, histórico, notas técnicas)
+     - Galería de Fotos (SOLO VIP/Black/Gold) - Good to have: control de calidad, rastreabilidad de quejas
+     - Sistema de Membresías (planes, créditos)
+     - Sistema de Puntos (independiente de tiers, expiran después de X meses sin usar)
+     - APIs: `/api/aperture/clients`, `/api/aperture/loyalty`
+   - **FASE 6**: Ventas, Pagos y Facturación (~20-25 horas)
+     - POS (Punto de Venta) completo (puede crear nuevas citas + procesar pagos)
+     - NO imprimir recibos (enviar email o dashboard cliente)
+     - Cierre de Caja (resumen diario, PDF automático)
+     - Finanzas (gastos, margen neto)
+     - APIs: `/api/aperture/pos`, `/api/aperture/finance`
+   - **FASE 7**: Marketing y Configuración (~10-15 horas)
+     - Campañas (promociones masivas Email/WhatsApp)
+     - Precios Inteligentes (configurables por servicio, aplicables ambos canales)
+     - Integraciones Placeholder (Google, Instagram/FB Shopping) - Good to have, no priority
+     - APIs: `/api/aperture/campaigns`, `/api/aperture/pricing`, `/api/aperture/integrations`
+
+### 🟢 BAJA - Integraciones Pendientes (Timeline: 1-2 meses)
+
+8. **Implementar Google Calendar Sync** - ~6-8 horas
+   - Sincronización bidireccional
+   - Manejo de conflictos
+   - Webhook para updates de calendar
+
+9. **Implementar Notificaciones WhatsApp** - ~4-6 horas
+   - Integración con Twilio/Meta WhatsApp API
+   - Templates de mensajes (confirmación, recordatorios, alertas no-show)
+   - Sistema de envío programado
+
+10. **Implementar Recibos digitales** - ~3-4 horas
+   - Generador de PDFs
+   - Sistema de emails (SendGrid, AWS SES, etc.)
+   - Dashboard de transacciones
+
+11. **Crear Landing page Believers** - ~4-5 horas
+   - Página pública de booking
+   - Calendario simplificado para clientes
+   - Captura de datos básicos
+
+12. **Implementar Tests Unitarios** - ~5-7 horas
+   - Unit tests para generador de Short ID
+   - Tests para disponibilidad
+
+13. **Archivos SEO** - ~30 min
+   - `public/robots.txt`
+   - `public/sitemap.xml`
 
 ---
 

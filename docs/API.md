@@ -22,6 +22,9 @@ AnchorOS is a comprehensive salon management system built with Next.js, Supabase
 #### Availability
 - `GET /api/availability/time-slots` - Get available time slots for booking
 - `POST /api/availability/staff-unavailable` - Mark staff unavailable (Staff auth required)
+- `GET /api/availability/blocks` - Get manual availability blocks
+- `GET /api/public/availability` - Get public availability information (no auth required)
+- `POST /api/availability/staff` - Set staff availability
 
 #### Customers
 - `GET /api/customers` - Search customer by email or phone
@@ -30,7 +33,8 @@ AnchorOS is a comprehensive salon management system built with Next.js, Supabase
 #### Bookings (Public)
 - `POST /api/bookings` - Create new booking (supports customer_id or customer info)
 - `GET /api/bookings/[id]` - Get booking details
-- `PUT /api/bookings/[id]` - Update booking
+- `PATCH /api/bookings/[id]` - Update booking (partial update)
+- `PUT /api/bookings/[id]` - Update booking (full replacement)
 
 ### Staff/Admin APIs (Aperture)
 
@@ -59,6 +63,7 @@ AnchorOS is a comprehensive salon management system built with Next.js, Supabase
 - `POST /api/kiosk/authenticate` - Authenticate kiosk
 - `GET /api/kiosk/resources/available` - Get available resources for kiosk
 - `POST /api/kiosk/bookings` - Create walk-in booking
+- `POST /api/kiosk/walkin` - Create walk-in booking without reservation
 - `PUT /api/kiosk/bookings/[shortId]/confirm` - Confirm booking
 
 ### Payment APIs

@@ -240,17 +240,8 @@ El sitio estará disponible en **http://localhost:2311**
 - ✅ Sistema de disponibilidad (staff, recursos, bloques)
 - ✅ API routes de disponibilidad
 - ✅ API de reservas para clientes (POST/GET)
-- ✅ HQ Dashboard (Aperture) con gestión de staff y recursos
-- ✅ Reportes de ventas, pagos y nómina
-- ✅ Gestión de permisos por roles
-- ✅ Integración con Stripe para pagos y depósitos
-- ✅ Autenticación completa (clientes con magic links, staff/admin)
-- ✅ The Boutique - Frontend de reservas completo
-  - Página de selección de servicios (/booking/servicios)
-  - Página de confirmación de reserva (/booking/cita)
-  - API para obtener servicios (/api/services)
-  - API para obtener ubicaciones (/api/locations)
-  - Configuración de dominios wildcard en producción
+- ✅ HQ Dashboard básico (Aperture) - EXISTE pero incompleto
+- ✅ API routes básicos para Aperture (dashboard, staff, resources, reports, permissions)
 - ✅ Frontend institucional anchor23.mx completo
   - Landing page con hero, fundamento, servicios, testimoniales
   - Página de servicios
@@ -262,15 +253,46 @@ El sitio estará disponible en **http://localhost:2311**
   - Header y footer globales
 
 ### En Progreso 🚧
+- 🚧 The Boutique - Frontend de reservas (booking.anchor23.mx) - 90%
+  - ✅ Página de selección de servicios (/booking/servicios)
+  - ✅ Página de búsqueda de clientes (/booking/cita - paso 1)
+  - ✅ Página de registro de clientes (/booking/registro)
+  - ✅ Página de confirmación de reserva (/booking/cita - pasos 2-3)
+  - ✅ Página de confirmación por código (/booking/confirmacion)
+  - ✅ Layout específico con navbar personalizado
+  - ✅ API para obtener servicios (/api/services)
+  - ✅ API para obtener ubicaciones (/api/locations)
+  - ✅ API para buscar clientes (/api/customers - GET)
+  - ✅ API para registrar clientes (/api/customers - POST)
+  - ✅ Sistema de horarios de negocio por ubicación
+  - ✅ Componente de pagos mock para pruebas
+  - ⏳ Configuración de dominios wildcard en producción
+  - ⏳ Integración con Stripe real (webhooks)
+
+- 🚧 Aperture - Backend para staff/manager/admin (aperture.anchor23.mx) - 40%
+  - ✅ API para obtener staff disponible (/api/aperture/staff)
+  - ✅ API para gestión de horarios (/api/aperture/staff/schedule)
+  - ✅ API para recursos (/api/aperture/resources)
+  - ✅ API para dashboard (/api/aperture/dashboard)
+  - ✅ Página principal de admin (/aperture)
+  - ❌ API para estadísticas (/api/aperture/stats) - FALTA IMPLEMENTAR
+  - ❌ Reseteo semanal de invitaciones (documentado, NO implementado)
+  - ⏳ Autenticación de admin/staff/manager (login existe, needs Supabase Auth)
+  - ⏳ Gestión completa de staff (CRUD, horarios)
+  - ⏳ Gestión de recursos y asignación
+  - ⏳ Rediseño con estilo Square UI
+
 - 🚧 Lógica de no-show y penalizaciones automáticas
-- 🚧 Integración con Google Calendar
+- 🚧 Integración con Google Calendar (20% - en progreso)
 
 ### Pendiente ⏳
 - ⏳ Implementar API pública (api.anchor23.mx)
+- ⏳ Completar Aperture con estilo Square UI (calendario multi-columna, páginas individuales, The Vault)
 - ⏳ Notificaciones por WhatsApp
 - ⏳ Recibos digitales por email
 - ⏳ Landing page para believers (booking público)
-- ⏳ The Vault (storage de fotos privadas)
+- ⏳ Tests unitarios
+- ⏳ Archivos SEO (robots.txt, sitemap.xml)
 
 ### Fase Actual
 **Fase 1 — Cimientos y CRM**: 100% completado
@@ -294,6 +316,18 @@ El sitio estará disponible en **http://localhost:2311**
 **Fase 3 — Pagos y Protección**: 70% completado
 - Stripe depósitos dinámicos: 100%
 - No-show logic: 40% (lógica implementada, automatización pendiente)
+
+**Fase 4 — HQ Dashboard**: 10% completado
+- Aperture dashboard básico: 100% (existe pero incompleto)
+- Autenticación staff/admin: 40% (página login existe, needs Supabase Auth integration)
+- Calendario Multi-Columna: 0% (pendiente)
+- Gestión Operativa: 20% (APIs existentes, UI incompleta)
+- The Vault: 0% (pendiente)
+
+**Fase 5 — Automatización y Lanzamiento**: 5% completado
+- Notificaciones WhatsApp: 0% (variables configuradas, no implementado)
+- Recibos digitales: 0% (pendiente)
+- Landing page Believers: 0% (pendiente)
 
 **Advertencia:** No apto para producción. Migraciones y seeds en evolución.
 
