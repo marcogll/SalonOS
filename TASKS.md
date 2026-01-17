@@ -519,17 +519,17 @@ Validación Staff (rol Staff):
 
 ### 🔴 CRÍTICO - Bloquea Funcionamiento (Timeline: 1-2 días)
 
-1. **Implementar `GET /api/aperture/stats`** - ~30 min
-   - Dashboard de Aperture espera este endpoint
-   - Sin esto, estadísticas no se cargan
-   - Respuesta esperada: `{ success: true, stats: { totalBookings, totalRevenue, completedToday, upcomingToday } }`
-   - Ubicación: `app/api/aperture/stats/route.ts`
+1. ✅ **Implementar `GET /api/aperture/stats`** - COMPLETADO
+   - ✅ Dashboard de Aperture espera este endpoint
+   - ✅ Sin esto, estadísticas no se cargan
+   - ✅ Respuesta esperada: `{ success: true, stats: { totalBookings, totalRevenue, completedToday, upcomingToday } }`
+   - ✅ Ubicación: `app/api/aperture/stats/route.ts`
 
-2. **Implementar autenticación para Aperture** - ~2-3 horas
-   - Integración con Supabase Auth para roles admin/manager/staff
-   - Protección de rutas de Aperture (middleware)
-   - Session management
-   - Página login ya existe en `/app/aperture/login/page.tsx`, needs Supabase Auth integration
+2. ✅ **Implementar autenticación para Aperture** - COMPLETADO
+   - ✅ Integración con Supabase Auth para roles admin/manager/staff
+   - ✅ Protección de rutas de Aperture (middleware creado)
+   - ✅ Session management con AuthProvider existente
+   - ✅ Página login ya existe en `/app/aperture/login/page.tsx`
 
 3. **Implementar reseteo semanal de invitaciones** - ~2-3 horas
    - Script/Edge Function que se ejecuta cada Lunes 00:00 UTC
