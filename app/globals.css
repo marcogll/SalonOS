@@ -9,13 +9,65 @@
     --mocha-taupe: #B8A89A;
     --deep-earth: #6F5E4F;
     --charcoal-brown: #3F362E;
+
+    /* Aperture - Square UI */
+    --ui-primary: #006AFF;
+    --ui-primary-hover: #005ED6;
+    --ui-primary-light: #E6F0FF;
+
+    --ui-bg: #F6F8FA;
+    --ui-bg-card: #FFFFFF;
+    --ui-bg-hover: #F3F4F6;
+
+    --ui-border: #E1E4E8;
+    --ui-border-light: #F3F4F6;
+
+    --ui-text-primary: #24292E;
+    --ui-text-secondary: #586069;
+    --ui-text-tertiary: #8B949E;
+    --ui-text-inverse: #FFFFFF;
+
+    --ui-success: #28A745;
+    --ui-success-light: #D4EDDA;
+
+    --ui-warning: #DBAB09;
+    --ui-warning-light: #FFF3CD;
+
+    --ui-error: #D73A49;
+    --ui-error-light: #F8D7DA;
+
+    --ui-info: #0366D6;
+    --ui-info-light: #CCE5FF;
+
+    --ui-shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.08);
+    --ui-shadow-md: 0 4px 12px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08);
+    --ui-shadow-lg: 0 8px 24px rgba(0,0,0,0,16), 0 4px 6px rgba(0,0,0,0.08);
+    --ui-shadow-xl: 0 20px 25px rgba(0,0,0,0.16), 0 4px 6px rgba(0,0,0,0.08);
+
+    --ui-radius-sm: 4px;
+    --ui-radius-md: 6px;
+    --ui-radius-lg: 8px;
+    --ui-radius-xl: 12px;
+    --ui-radius-2xl: 16px;
+    --ui-radius-full: 9999px;
+
+    /* Font sizes */
+    --text-xs: 0.75rem;   /* 12px */
+    --text-sm: 0.875rem;  /* 14px */
+    --text-base: 1rem;     /* 16px */
+    --text-lg: 1.125rem;  /* 18px */
+    --text-xl: 1.25rem;  /* 20px */
+    --text-2xl: 1.5rem;  /* 24px */
+    --text-3xl: 1.875rem;  /* 30px */
+    --text-4xl: 2.25rem;  /* 36px */
+    --text-5xl: 3rem;        /* 48px */
   }
 
   body {
     color: var(--charcoal-brown);
     background: var(--bone-white);
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Playfair Display', serif;
   }
