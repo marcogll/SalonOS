@@ -1,75 +1,10 @@
--- ============================================
--- CREAR TABLAS DE DISPONIBILIDAD
--- ============================================
+-- Complete fix for all availability functions with proper type casting
+-- This replaces all functions to fix type comparison issues
 
--- ============================================
--- AGREGAR CAMPOS DE HORARIO A STAFF
--- ============================================
-
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'staff' AND column_name = 'work_hours_start') THEN
-        ALTER TABLE staff ADD COLUMN work_hours_start TIME;
-        RAISE NOTICE 'Added work_hours_start to staff';
-    END IF;
-
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'staff' AND column_name = 'work_hours_end') THEN
-        ALTER TABLE staff ADD COLUMN work_hours_end TIME;
-        RAISE NOTICE 'Added work_hours_end to staff';
-    END IF;
-
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'staff' AND column_name = 'work_days') THEN
-        ALTER TABLE staff ADD COLUMN work_days TEXT DEFAULT 'MON,TUE,WED,THU,FRI,SAT';
-        RAISE NOTICE 'Added work_days to staff';
-    END IF;
-
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'staff' AND column_name = 'is_available_for_booking') THEN
-        ALTER TABLE staff ADD COLUMN is_available_for_booking BOOLEAN DEFAULT true;
-        RAISE NOTICE 'Added is_available_for_booking to staff';
-    END IF;
-END
-$$;
-
--- ============================================
--- TABLA: booking_blocks
--- Bloqueos de tiempo para recursos específicos
--- ============================================
-
-CREATE TABLE IF NOT EXISTS booking_blocks (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    location_id UUID NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
-    resource_id UUID NOT NULL REFERENCES resources(id) ON DELETE CASCADE,
-    start_time_utc TIMESTAMPTZ NOT NULL,
-    end_time_utc TIMESTAMPTZ NOT NULL,
-    reason TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    created_by UUID REFERENCES staff(id) ON DELETE SET NULL,
-    CONSTRAINT booking_blocks_time_check CHECK (end_time_utc > start_time_utc)
-);
-
-CREATE INDEX idx_booking_blocks_location_time ON booking_blocks(location_id, start_time_utc, end_time_utc);
-CREATE INDEX idx_booking_blocks_resource ON booking_blocks(resource_id);
-
--- ============================================
--- TABLA: staff_availability
--- Disponibilidad manual del staff por día
--- ============================================
-
-CREATE TABLE IF NOT EXISTS staff_availability (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    staff_id UUID NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
-    date DATE NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL,
-    is_available BOOLEAN NOT NULL DEFAULT true,
-    reason TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    created_by UUID REFERENCES staff(id) ON DELETE SET NULL,
-    CONSTRAINT staff_availability_time_check CHECK (end_time > start_time),
-    CONSTRAINT staff_availability_unique UNIQUE (staff_id, date)
-);
-
-CREATE INDEX idx_staff_availability_staff_date ON staff_availability(staff_id, date);
+-- Drop all functions first
+DROP FUNCTION IF EXISTS check_staff_work_hours(p_staff_id UUID, p_start_time_utc TIMESTAMPTZ, p_end_time_utc TIMESTAMPTZ, p_location_timezone TEXT) CASCADE;
+DROP FUNCTION IF EXISTS check_staff_availability(p_staff_id UUID, p_start_time_utc TIMESTAMPTZ, p_end_time_utc TIMESTAMPTZ, p_exclude_booking_id UUID) CASCADE;
+DROP FUNCTION IF EXISTS get_detailed_availability(p_location_id UUID, p_service_id UUID, p_date DATE, p_time_slot_duration_minutes INTEGER) CASCADE;
 
 -- ============================================
 -- FUNCIÓN: check_staff_work_hours
@@ -142,6 +77,10 @@ DECLARE
     v_has_booking_conflict BOOLEAN;
     v_has_manual_block BOOLEAN;
     v_location_timezone TEXT;
+    v_start_time_local TIME;
+    v_end_time_local TIME;
+    v_block_start_local TIME;
+    v_block_end_local TIME;
 BEGIN
     -- Obtener zona horaria de la ubicación del staff
     SELECT timezone INTO v_location_timezone
@@ -169,6 +108,10 @@ BEGIN
         RETURN false;
     END IF;
 
+    -- Convertir a TIME local para comparación
+    v_start_time_local := (p_start_time_utc AT TIME ZONE v_location_timezone)::TIME;
+    v_end_time_local := (p_end_time_utc AT TIME ZONE v_location_timezone)::TIME;
+
     -- Verificar bloques manuales de disponibilidad
     SELECT EXISTS(
         SELECT 1
@@ -176,8 +119,7 @@ BEGIN
         WHERE staff_id = p_staff_id
         AND date = (p_start_time_utc AT TIME ZONE v_location_timezone)::DATE
         AND is_available = false
-        AND NOT (p_end_time_utc AT TIME ZONE v_location_timezone::TIME <= start_time
-               OR p_start_time_utc AT TIME ZONE v_location_timezone::TIME >= end_time)
+        AND NOT (v_end_time_local <= end_time OR v_start_time_local >= start_time)
     ) INTO v_has_manual_block;
 
     IF v_has_manual_block THEN
@@ -189,57 +131,9 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================
--- FUNCIÓN: get_available_staff
--- Obtiene staff disponible para un rango de tiempo
--- ============================================
-
-DROP FUNCTION IF EXISTS get_available_staff(p_location_id UUID, p_start_time_utc TIMESTAMPTZ, p_end_time_utc TIMESTAMPTZ) CASCADE;
-
-CREATE OR REPLACE FUNCTION get_available_staff(
-    p_location_id UUID,
-    p_start_time_utc TIMESTAMPTZ,
-    p_end_time_utc TIMESTAMPTZ
-)
-RETURNS TABLE (
-    staff_id UUID,
-    staff_name TEXT,
-    role TEXT,
-    work_hours_start TIME,
-    work_hours_end TIME,
-    work_days TEXT,
-    location_id UUID
-) AS $$
-BEGIN
-    RETURN QUERY
-    SELECT 
-        s.id::UUID,
-        s.display_name::TEXT,
-        s.role::TEXT,
-        s.work_hours_start::TIME,
-        s.work_hours_end::TIME,
-        s.work_days::TEXT,
-        s.location_id
-    FROM staff s
-    WHERE s.location_id = p_location_id
-    AND s.is_active = true
-    AND s.is_available_for_booking = true
-    AND s.role IN ('artist', 'staff', 'manager')
-    AND check_staff_availability(s.id, p_start_time_utc, p_end_time_utc)
-    ORDER BY
-        CASE s.role
-            WHEN 'manager' THEN 1
-            WHEN 'staff' THEN 2
-            WHEN 'artist' THEN 3
-        END;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- ============================================
 -- FUNCIÓN: get_detailed_availability
 -- Obtiene slots de tiempo disponibles
 -- ============================================
-
-DROP FUNCTION IF EXISTS get_detailed_availability(p_location_id UUID, p_service_id UUID, p_date DATE, p_time_slot_duration_minutes INTEGER) CASCADE;
 
 CREATE OR REPLACE FUNCTION get_detailed_availability(
     p_location_id UUID,
@@ -251,12 +145,16 @@ RETURNS JSONB AS $$
 DECLARE
     v_service_duration INTEGER;
     v_location_timezone TEXT;
+    v_business_hours JSONB;
+    v_day_of_week TEXT;
+    v_day_hours JSONB;
     v_start_time TIME := '09:00'::TIME;
     v_end_time TIME := '21:00'::TIME;
     v_time_slots JSONB := '[]'::JSONB;
     v_slot_start TIMESTAMPTZ;
     v_slot_end TIMESTAMPTZ;
     v_available_staff_count INTEGER;
+    v_day_names TEXT[] := ARRAY['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 BEGIN
     -- Obtener duración del servicio
     SELECT duration_minutes INTO v_service_duration
@@ -267,14 +165,34 @@ BEGIN
         RETURN '[]'::JSONB;
     END IF;
 
-    -- Obtener zona horaria de la ubicación
-    SELECT timezone INTO v_location_timezone
+    -- Obtener zona horaria y horarios de la ubicación
+    SELECT 
+        timezone,
+        business_hours
+    INTO 
+        v_location_timezone,
+        v_business_hours
     FROM locations
     WHERE id = p_location_id;
 
     IF v_location_timezone IS NULL THEN
         RETURN '[]'::JSONB;
     END IF;
+
+    -- Obtener día de la semana (0 = Domingo, 1 = Lunes, etc.)
+    v_day_of_week := v_day_names[EXTRACT(DOW FROM p_date) + 1];
+
+    -- Obtener horarios para este día
+    v_day_hours := v_business_hours -> v_day_of_week;
+
+    -- Verificar si el lugar está cerrado este día
+    IF v_day_hours->>'is_closed' = 'true' THEN
+        RETURN '[]'::JSONB;
+    END IF;
+
+    -- Extraer horas de apertura y cierre
+    v_start_time := (v_day_hours->>'open')::TIME;
+    v_end_time := (v_day_hours->>'close')::TIME;
 
     -- Generar slots de tiempo para el día
     v_slot_start := (p_date || ' ' || v_start_time::TEXT)::TIMESTAMPTZ
@@ -314,24 +232,3 @@ BEGIN
     RETURN v_time_slots;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- ============================================
--- VERIFICACIÓN
--- ============================================
-
-DO $$
-BEGIN
-    RAISE NOTICE '==========================================';
-    RAISE NOTICE 'SISTEMA DE DISPONIBILIDAD COMPLETADO';
-    RAISE NOTICE '==========================================';
-    RAISE NOTICE 'Tablas creadas:';
-    RAISE NOTICE '  - booking_blocks';
-    RAISE NOTICE '  - staff_availability';
-    RAISE NOTICE 'Funciones RPC creadas:';
-    RAISE NOTICE '  - check_staff_work_hours';
-    RAISE NOTICE '  - check_staff_availability';
-    RAISE NOTICE '  - get_available_staff';
-    RAISE NOTICE '  - get_detailed_availability';
-    RAISE NOTICE '==========================================';
-END
-$$;

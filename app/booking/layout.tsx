@@ -8,7 +8,12 @@ import { useAuth } from '@/lib/auth/context'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+const STRIPE_ENABLED = process.env.NEXT_PUBLIC_STRIPE_ENABLED === 'true'
+const STRIPE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+
+const stripePromise = STRIPE_ENABLED && STRIPE_KEY && !STRIPE_KEY.includes('your_stripe_')
+  ? loadStripe(STRIPE_KEY)
+  : null
 
 export default function BookingLayout({
   children,
@@ -16,8 +21,9 @@ export default function BookingLayout({
   children: ReactNode
 }) {
   const { user, signOut, loading } = useAuth()
-  return (
-    <Elements stripe={stripePromise}>
+
+  const content = (
+    <>
       <header className="site-header booking-header">
         <nav className="nav-primary">
           <div className="logo">
@@ -72,6 +78,8 @@ export default function BookingLayout({
       <main className="pt-24">
         {children}
       </main>
-    </Elements>
+    </>
   )
+
+  return stripePromise ? <Elements stripe={stripePromise}>{content}</Elements> : content
 }

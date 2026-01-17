@@ -8,6 +8,22 @@ export type InvitationStatus = 'pending' | 'used' | 'expired'
 export type ResourceType = 'station' | 'room' | 'equipment'
 export type AuditAction = 'create' | 'update' | 'delete' | 'reset_invitations' | 'payment' | 'status_change'
 
+export interface DayHours {
+  open: string
+  close: string
+  is_closed: boolean
+}
+
+export interface BusinessHours {
+  monday: DayHours
+  tuesday: DayHours
+  wednesday: DayHours
+  thursday: DayHours
+  friday: DayHours
+  saturday: DayHours
+  sunday: DayHours
+}
+
 /** Represents a salon location with timezone and contact info */
 export interface Location {
   id: string
@@ -16,6 +32,7 @@ export interface Location {
   address?: string
   phone?: string
   is_active: boolean
+  business_hours?: BusinessHours
   created_at: string
   updated_at: string
 }
@@ -151,8 +168,8 @@ export type Database = {
     Tables: {
       locations: {
         Row: Location
-        Insert: Omit<Location, 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Omit<Location, 'id' | 'created_at'>>
+        Insert: Omit<Location, 'id' | 'created_at' | 'updated_at'> & { business_hours?: BusinessHours }
+        Update: Partial<Omit<Location, 'id' | 'created_at'> & { business_hours?: BusinessHours }>
       }
       resources: {
         Row: Resource

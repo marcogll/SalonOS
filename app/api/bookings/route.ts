@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { generateShortId } from '@/lib/utils/short-id'
 
 /**
@@ -9,6 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const {
+      customer_id,
       customer_email,
       customer_phone,
       customer_first_name,
@@ -19,9 +20,16 @@ export async function POST(request: NextRequest) {
       notes
     } = body
 
-    if (!customer_email || !service_id || !location_id || !start_time_utc) {
+    if (!customer_id && (!customer_email || !customer_first_name || !customer_last_name)) {
       return NextResponse.json(
-        { error: 'Missing required fields: customer_email, service_id, location_id, start_time_utc' },
+        { error: 'Missing required fields: customer_id OR (customer_email, customer_first_name, customer_last_name)' },
+        { status: 400 }
+      )
+    }
+
+    if (!service_id || !location_id || !start_time_utc) {
+      return NextResponse.json(
+        { error: 'Missing required fields: service_id, location_id, start_time_utc' },
         { status: 400 }
       )
     }
@@ -122,25 +130,39 @@ export async function POST(request: NextRequest) {
 
     const assignedResource = availableResources[0]
 
-    // Create or find customer based on email
-    const { data: customer, error: customerError } = await supabaseAdmin
-      .from('customers')
-      .upsert({
-        email: customer_email,
-        phone: customer_phone || null,
-        first_name: customer_first_name || null,
-        last_name: customer_last_name || null
-      }, {
-        onConflict: 'email',
-        ignoreDuplicates: false
-      })
-      .select()
-      .single()
+    let customer
+    let customerError
+
+    if (customer_id) {
+      const result = await supabaseAdmin
+        .from('customers')
+        .select('*')
+        .eq('id', customer_id)
+        .single()
+      customer = result.data
+      customerError = result.error
+    } else {
+      const result = await supabaseAdmin
+        .from('customers')
+        .upsert({
+          email: customer_email,
+          phone: customer_phone || null,
+          first_name: customer_first_name || null,
+          last_name: customer_last_name || null
+        }, {
+          onConflict: 'email',
+          ignoreDuplicates: false
+        })
+        .select()
+        .single()
+      customer = result.data
+      customerError = result.error
+    }
 
     if (customerError || !customer) {
-      console.error('Error creating customer:', customerError)
+      console.error('Error handling customer:', customerError)
       return NextResponse.json(
-        { error: 'Failed to create customer' },
+        { error: 'Failed to handle customer' },
         { status: 500 }
       )
     }
@@ -248,8 +270,7 @@ export async function GET(request: NextRequest) {
           id,
           name,
           duration_minutes,
-          base_price,
-          category
+          base_price
         ),
         resource (
           id,
