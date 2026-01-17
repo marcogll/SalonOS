@@ -348,7 +348,7 @@ Validación Staff (rol Staff):
   - ⏳ Gestión de recursos y asignación
 
 ### ⏳ Pendiente
-- ⏳ Implementar API pública (api.anchor23.mx) - Horarios, servicios, ubicaciones públicas
+- ✅ Implementar API pública (api.anchor23.mx) - Horarios, servicios, ubicaciones públicas
 - ⏳ Implementar autenticación para staff/manager/admin (Supabase Auth)
 - ⏳ Implementar sistema completo de asignación de disponibilidad
 - ⏳ Integración con Google Calendar

@@ -62,6 +62,8 @@ El PRD es la fuente de verdad funcional. El README es la guía de ejecución.
 * `anchor23.mx` - Frontend institucional (landing page + páginas informativas)
 * `booking.anchor23.mx` - Frontend de reservas (The Boutique) - **Pendiente**
 * `kiosk.anchor23.mx` - Sistema de autoservicio (The Kiosk)
+* `aperture.anchor23.mx` - Dashboard administrativo y CRM (The HQ)
+* `api.anchor23.mx` - API pública para integraciones externas
 
 ### Experiencias
 

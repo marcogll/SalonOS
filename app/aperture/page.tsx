@@ -44,6 +44,12 @@ export default function ApertureDashboard() {
     )
   }
 
+  useEffect(() => {
+    if (!user) {
+      router.push('/aperture/login')
+    }
+  }, [user, router])
+
   if (!user) {
     return null
   }
