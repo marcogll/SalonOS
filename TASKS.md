@@ -604,12 +604,13 @@ Validación Staff (rol Staff):
       - ✅ Drag & Drop con reprogramación automática
       - ✅ Notificaciones en tiempo real (auto-refresh cada 30s)
       - ⏳ Resize de bloques dinámico (opcional)
-   - **FASE 4**: Miembros del Equipo y Nómina (~20-25 horas)
-     - Gestión de Staff (CRUD completo con foto, rating, toggle activo)
-     - Configuración de Comisiones (% por servicio y producto)
-     - Cálculo de Nómina (Sueldo Base + Comisiones + Propinas)
-     - Calendario de Turnos (vista semanal)
-     - APIs: `/api/aperture/staff` (PATCH, DELETE), `/api/aperture/payroll`
+    - **FASE 4**: Miembros del Equipo y Nómina (~20-25 horas) ✅ EN PROGRESO
+      - ✅ Gestión de Staff (CRUD completo con APIs funcionales)
+      - ✅ APIs de Nómina (`/api/aperture/payroll` con cálculos automáticos)
+      - ✅ Cálculo de Nómina (Sueldo Base + Comisiones + Propinas)
+      - ✅ Configuración de Comisiones (% por servicio basado en revenue)
+      - ⏳ Calendario de Turnos (próxima iteración - tabla staff_availability existe)
+      - ✅ APIs: `/api/aperture/staff` (GET/POST/PUT/DELETE), `/api/aperture/payroll`
    - **FASE 5**: Clientes y Fidelización (Loyalty) (~20-25 horas)
      - CRM de Clientes (búsqueda fonética, histórico, notas técnicas)
      - Galería de Fotos (SOLO VIP/Black/Gold) - Good to have: control de calidad, rastreabilidad de quejas
