@@ -527,16 +527,25 @@ Validación Staff (rol Staff):
 
 2. ✅ **Implementar autenticación para Aperture** - COMPLETADO
    - ✅ Integración con Supabase Auth para roles admin/manager/staff
-   - ✅ Protección de rutas de Aperture (middleware creado)
-   - ✅ Session management con AuthProvider existente
-   - ✅ Página login ya existe en `/app/aperture/login/page.tsx`
+   - ✅ Protección de rutas de Aperture (middleware)
+   - ✅ Session management
+   - ✅ Página login ya existe en `/app/aperture/login/page.tsx`, integration completada
 
-3. **Implementar reseteo semanal de invitaciones** - ~2-3 horas
-   - Script/Edge Function que se ejecuta cada Lunes 00:00 UTC
-   - Resetea `weekly_invitations_used` a 0 para todos los clientes Tier Gold
-   - Registra acción en `audit_logs`
-   - Documentado en TASKS.md línea 211 pero NO implementado
-   - Impacto: Membresías Gold no funcionan correctamente sin esto
+3. ✅ **Implementar reseteo semanal de invitaciones** - COMPLETADO
+   - ✅ Script/Edge Function que se ejecuta cada Lunes 00:00 UTC
+   - ✅ Resetea `weekly_invitations_used` a 0 para todos los clientes Tier Gold
+   - ✅ Registra acción en `audit_logs`
+   - ✅ Ubicación: `app/api/cron/reset-invitations/route.ts`
+   - ✅ Impacto: Membresías Gold ahora funcionan correctamente
+
+**Configuración Necesaria:**
+- Agregar `CRON_SECRET` a variables de entorno (.env.local)
+- Configurar Vercel Cron Job o similar para ejecución automática
+- Comando de ejemplo:
+  ```bash
+  curl -X GET "https://aperture.anchor23.mx/api/cron/reset-invitations" \
+    -H "Authorization: Bearer YOUR_CRON_SECRET"
+  ```
 
 ### 🟡 ALTA - Documentación y Diseño (Timeline: 1 semana)
 
