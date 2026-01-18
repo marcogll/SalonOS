@@ -25,8 +25,8 @@ ENV SUPABASE_SERVICE_ROLE_KEY=placeholder-service-role-key
 ENV STRIPE_SECRET_KEY=<REDACTED>
 ENV RESEND_API_KEY=<REDACTED>
 
-# Aumentar memoria disponible para Node.js durante el build
-ENV NODE_OPTIONS=--max-old-space-size=4096
+# Deshabilitar Google Calendar temporalmente para evitar errores de build
+ENV GOOGLE_SERVICE_ACCOUNT_JSON=""
 
 # Build optimizado
 RUN npm run build
