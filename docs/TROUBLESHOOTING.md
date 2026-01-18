@@ -20,6 +20,14 @@ Esta guía ayuda a resolver problemas comunes durante el setup y desarrollo de A
   - Verificar políticas en Supabase Dashboard > Authentication > Policies
   - Para kioskos: asegurar API key válida en headers `x-kiosk-api-key`
 
+#### Error: "TypeError: fetch failed" (Resuelto Enero 2026)
+- **Causa**: Cliente Supabase se inicializa antes de que las variables de entorno estén disponibles en runtime
+- **Solución**:
+  - Cliente ahora usa inicialización lazy (solo cuando se necesita)
+  - APIs incluyen pruebas de conectividad antes de ejecutar queries
+  - Logs detallados muestran el estado de conexión
+  - Actualizado a Node.js 20 para compatibilidad con Supabase
+
 #### Error: "Magic link not received"
 - **Causa**: SMTP no configurado en Supabase
 - **Solución**:

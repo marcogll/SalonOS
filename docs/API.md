@@ -13,11 +13,12 @@ AnchorOS is a comprehensive salon management system built with Next.js, Supabase
 ### Public APIs
 
 #### Services
-- `GET /api/services` - List all available services
+- `GET /api/services` - List all available services (with detailed logging and error diagnostics)
+- `GET /api/services?location_id={id}` - Filter services by location
 - `POST /api/services` - Create new service (Admin only)
 
 #### Locations
-- `GET /api/locations` - List all salon locations
+- `GET /api/locations` - List all salon locations (with detailed logging and error diagnostics)
 
 #### Availability
 - `GET /api/availability/time-slots` - Get available time slots for booking
@@ -142,7 +143,7 @@ Default business hours (updated via migration):
 ## Deployment
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 20+ (updated for Supabase compatibility)
 - Supabase account
 - Stripe account
 - Google Cloud (for Calendar)
@@ -192,6 +193,45 @@ Default business hours (updated via migration):
 - API key authentication for kiosks
 - Magic link authentication for customers
 - Encrypted payment processing
+
+## Recent Improvements (January 2026)
+
+### Supabase Connection Fixes
+- **Lazy Client Initialization**: Supabase client now initializes only when needed, ensuring environment variables are available at runtime
+- **Enhanced Error Diagnostics**: APIs now provide detailed logging for connection issues
+- **Node.js 20 Compatibility**: Updated runtime for better Supabase SDK compatibility
+- **Connection Testing**: APIs test Supabase connectivity before executing queries
+
+### API Enhancements
+- **Detailed Logging**: Services and Locations APIs now log connection status, query results, and errors
+- **Better Error Messages**: Failed requests return structured error information with timestamps
+- **Connectivity Validation**: Pre-flight checks ensure Supabase is reachable before processing requests
+
+### Troubleshooting
+If APIs return `"TypeError: fetch failed"`:
+1. Verify Supabase environment variables are correctly set in deployment platform
+2. Check Supabase service status and connectivity
+3. Review deployment logs for initialization errors
+4. Ensure Node.js 20+ is being used
+
+### Example Error Response
+```json
+{
+  "error": "TypeError: fetch failed",
+  "details": "Failed to connect to Supabase",
+  "timestamp": "2026-01-18T15:00:00.000Z"
+}
+```
+
+### Example Success Response
+```json
+{
+  "success": true,
+  "services": [...],
+  "count": 22,
+  "timestamp": "2026-01-18T15:00:00.000Z"
+}
+```
 
 ## Support
 

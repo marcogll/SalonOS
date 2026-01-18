@@ -189,11 +189,11 @@ El PRD es la fuente de verdad funcional. El README es la guía de ejecución.
 
 ## 7. Requisitos de Entorno
 
-* Node.js 18+
-* Cuenta Supabase
-* Cuenta Stripe
-* Proyecto Google Cloud (Calendar API)
-* Credenciales WhatsApp API
+ * Node.js 20+ (actualizado para compatibilidad con Supabase)
+ * Cuenta Supabase
+ * Cuenta Stripe
+ * Proyecto Google Cloud (Calendar API)
+ * Credenciales WhatsApp API
 
 Variables de entorno obligatorias:
 
@@ -327,9 +327,16 @@ El sitio estará disponible en **http://localhost:2311**
 - ⏳ Recibos digitales por email
 - ⏳ Landing page para believers (booking público)
 - ⏳ Tests unitarios
-- ⏳ Archivos SEO (robots.txt, sitemap.xml)
+ - ⏳ Archivos SEO (robots.txt, sitemap.xml)
 
-### Fase Actual
+ ### Correcciones Recientes ✅ (Enero 2026)
+ - ✅ **Cliente Supabase Mejorado**: Inicialización lazy con validación de variables de entorno
+ - ✅ **APIs con Diagnóstico Avanzado**: Logging detallado en `/api/services` y `/api/locations`
+ - ✅ **Compatibilidad Node.js**: Actualización a Node 20 para compatibilidad con Supabase
+ - ✅ **Solución "fetch failed"**: Corrección del error de conectividad con Supabase en producción
+ - ✅ **Dockerfile Optimizado**: Imagen de producción con Node 20 y configuraciones mejoradas
+
+ ### Fase Actual
 **Fase 1 — Cimientos y CRM**: 100% completado
 - Infraestructura base: 100%
 - Esquema de base de datos: 100%
