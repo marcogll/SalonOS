@@ -19,6 +19,11 @@ COPY . .
 # Variables de entorno para build
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
+ENV NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder-anon-key
+ENV SUPABASE_SERVICE_ROLE_KEY=placeholder-service-role-key
+ENV STRIPE_SECRET_KEY=sk_test_placeholder_key
+ENV RESEND_API_KEY=re_placeholder_key
 
 # Build optimizado
 RUN npm run build

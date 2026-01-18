@@ -310,7 +310,6 @@ export default function POSSystem() {
                   <SelectValue placeholder="Seleccionar cliente (opcional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sin cliente especificado</SelectItem>
                   {customers.slice(0, 10).map(customer => (
                     <SelectItem key={customer.id} value={customer.id}>
                       {customer.first_name} {customer.last_name}

@@ -247,7 +247,6 @@ export default function PayrollManagement() {
                   <SelectValue placeholder="Todos los empleados" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos los empleados</SelectItem>
                   {/* This would need to be populated with actual staff data */}
                 </SelectContent>
               </Select>
