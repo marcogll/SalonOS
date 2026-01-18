@@ -46,7 +46,19 @@ class GoogleCalendarService {
         return;
       }
 
-      const credentials = JSON.parse(serviceAccountJson) as ServiceAccountConfig;
+      let credentials: ServiceAccountConfig;
+      
+      try {
+        credentials = JSON.parse(serviceAccountJson) as ServiceAccountConfig;
+      } catch (jsonError) {
+        console.error('GoogleCalendar: Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON', jsonError);
+        console.error('GoogleCalendar: Service account JSON value:', serviceAccountJson);
+        throw new Error('Invalid GOOGLE_SERVICE_ACCOUNT_JSON format. Please check environment variable.');
+      }
+
+      if (!credentials.type || !credentials.project_id || !credentials.private_key) {
+        throw new Error('Invalid GOOGLE_SERVICE_ACCOUNT_JSON: Missing required fields');
+      }
 
       const auth = new google.auth.GoogleAuth({
         credentials,
