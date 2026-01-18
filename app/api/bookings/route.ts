@@ -224,6 +224,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Send receipt email
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/receipts/${booking.id}/email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    } catch (emailError) {
+      console.error('Failed to send receipt email:', emailError)
+      // Don't fail the booking if email fails
+    }
+
     return NextResponse.json({
       success: true,
       booking

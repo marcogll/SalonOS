@@ -209,7 +209,7 @@ export default function MisCitasPage() {
                         </div>
                         {booking.notes && (
                           <div className="mt-3 p-3 rounded-lg" style={{ background: 'var(--bone-white)', color: 'var(--charcoal-brown)' }}>
-                            <p className="text-sm italic">"{booking.notes}"</p>
+                            <p className="text-sm italic">&quot;{booking.notes}&quot;</p>
                           </div>
                         )}
                       </div>

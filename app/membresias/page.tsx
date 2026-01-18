@@ -1,75 +1,113 @@
 'use client'
 
 import { useState } from 'react'
+import { AnimatedLogo } from '@/components/animated-logo'
+import { RollingPhrases } from '@/components/rolling-phrases'
 import { Crown, Star, Award, Diamond } from 'lucide-react'
+import { getDeviceType, sendWebhookPayload } from '@/lib/webhook'
 
 /** @description Membership tiers page component displaying exclusive membership options and application forms. */
 export default function MembresiasPage() {
-  const [selectedTier, setSelectedTier] = useState<string | null>(null)
   const [formData, setFormData] = useState({
+    membership_id: '',
     nombre: '',
     email: '',
     telefono: '',
     mensaje: ''
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [showThankYou, setShowThankYou] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const tiers = [
     {
       id: 'gold',
-      name: 'Gold Tier',
+      name: 'GOLD TIER',
       icon: Star,
-      description: 'Acceso prioritario y experiencias exclusivas.',
+      description: 'Acceso curado y acompañamiento continuo.',
       price: '$2,500 MXN',
       period: '/mes',
       benefits: [
-        'Reserva prioritaria',
-        '15% descuento en servicios',
-        'Acceso anticipado a eventos',
-        'Consultas de belleza mensuales',
-        'Producto de cortesía mensual'
+        'Prioridad de agenda en experiencias Anchor',
+        'Beauty Concierge para asesoría y coordinación de rituales',
+        'Acceso a horarios preferentes',
+        'Consulta de belleza mensual',
+        'Producto curado de cortesía mensual',
+        'Invitación anticipada a experiencias privadas'
       ]
     },
     {
       id: 'black',
-      name: 'Black Tier',
+      name: 'BLACK TIER',
       icon: Award,
-      description: 'Privilegios premium y atención personalizada.',
+      description: 'Privilegios premium y atención extendida.',
       price: '$5,000 MXN',
       period: '/mes',
       benefits: [
-        'Reserva prioritaria + sin espera',
-        '25% descuento en servicios',
-        'Acceso VIP a eventos exclusivos',
-        '2 tratamientos spa complementarios/mes',
-        'Set de productos premium trimestral'
+        'Prioridad absoluta de agenda (sin listas de espera)',
+        'Beauty Concierge dedicado con seguimiento integral',
+        'Acceso a espacios privados y bloques extendidos',
+        'Dos rituales complementarios curados al mes',
+        'Set de productos premium trimestral',
+        'Acceso VIP a eventos cerrados'
       ]
     },
     {
       id: 'vip',
-      name: 'VIP Tier',
+      name: 'VIP TIER',
       icon: Crown,
-      description: 'La máxima expresión de exclusividad.',
+      description: 'Acceso total y curaduría absoluta.',
       price: '$10,000 MXN',
       period: '/mes',
       featured: true,
       benefits: [
-        'Acceso inmediato - sin restricciones',
-        '35% descuento en servicios + productos',
-        'Experiencias personalizadas ilimitadas',
-        'Estilista asignado exclusivamente',
-        'Evento privado anual para ti + 5 invitados',
-        'Acceso a instalaciones fuera de horario'
+        'Acceso inmediato y sin restricciones de agenda',
+        'Beauty Concierge exclusivo + estilista asignado',
+        'Experiencias personalizadas ilimitadas (agenda privada)',
+        'Acceso a instalaciones fuera de horario',
+        'Evento privado anual para la member + 5 invitadas',
+        'Curaduría integral de rituales, productos y experiencias'
       ]
     }
   ]
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
+    setIsSubmitting(true)
+    setSubmitError(null)
+
+    const payload = {
+      form: 'memberships',
+      membership_id: formData.membership_id,
+      nombre: formData.nombre,
+      email: formData.email,
+      telefono: formData.telefono,
+      mensaje: formData.mensaje,
+      timestamp_utc: new Date().toISOString(),
+      device_type: getDeviceType()
+    }
+
+    try {
+      await sendWebhookPayload(payload)
+      setSubmitted(true)
+      setShowThankYou(true)
+      window.setTimeout(() => setShowThankYou(false), 3500)
+      setFormData({
+        membership_id: '',
+        nombre: '',
+        email: '',
+        telefono: '',
+        mensaje: ''
+      })
+    } catch (error) {
+      setSubmitError('No pudimos enviar tu solicitud. Intenta de nuevo.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -77,46 +115,68 @@ export default function MembresiasPage() {
   }
 
   const handleApply = (tierId: string) => {
-    setSelectedTier(tierId)
+    setFormData((prev) => ({
+      ...prev,
+      membership_id: tierId
+    }))
     document.getElementById('application-form')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
-    <div className="section">
-      <div className="section-header">
-        <h1 className="section-title">Membresías Exclusivas</h1>
-        <p className="section-subtitle">
-          Acceso prioritario, privilegios únicos y experiencias personalizadas.
-        </p>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 mb-24">
-        <div className="text-center mb-16">
-          <Diamond className="w-16 h-16 mx-auto mb-6 text-gray-900" />
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Experiencias a Medida
-          </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Nuestras membresías están diseñadas para clientes que valoran la exclusividad,
-            la atención personalizada y el acceso prioritario.
-          </p>
+    <>
+      <section className="hero">
+        <div className="hero-content">
+          <AnimatedLogo />
+          <h1>Membresías</h1>
+          <h2>Anchor:23</h2>
+          <RollingPhrases />
+          <div className="hero-actions">
+            <a href="#tiers" className="btn-secondary">Ver Membresías</a>
+            <a href="#solicitud" className="bg-[#3E352E] text-white hover:bg-[#3E352E]/90 px-8 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-300 inline-flex items-center justify-center">Solicitar Membresía</a>
+          </div>
         </div>
+        <div className="hero-image">
+          <div className="w-full h-96 flex items-center justify-center bg-gradient-to-br from-amber-50 to-gray-50">
+            <span className="text-gray-500 text-lg">Imagen Membresías Hero</span>
+          </div>
+        </div>
+      </section>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+      <section className="foundation" id="tiers">
+        <article>
+          <h3>Nota operativa</h3>
+          <h4>Las membresías no sustituyen el valor de las experiencias.</h4>
+          <p>
+            No existen descuentos ni negociaciones de estándar. Los beneficios se centran en tiempo, acceso, privacidad y criterio.
+          </p>
+          <p>
+            ANCHOR 23. Un espacio privado donde el tiempo se desacelera. No trabajamos con volumen. Trabajamos con intención.
+          </p>
+        </article>
+        <aside className="foundation-image">
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-50 to-gray-50">
+            <span className="text-gray-500 text-lg">Imagen Membresías</span>
+          </div>
+        </aside>
+      </section>
+
+      <section className="services-preview">
+        <h3>ANCHOR 23 · MEMBRESÍAS</h3>
+        <div className="grid md:grid-cols-3 gap-8">
           {tiers.map((tier) => {
             const Icon = tier.icon
             return (
-              <div
+              <article
                 key={tier.id}
                 className={`relative p-8 rounded-2xl shadow-lg border-2 transition-all ${
                   tier.featured
-                    ? 'bg-gray-900 border-gray-900 text-white transform scale-105'
-                    : 'bg-white border-gray-100 hover:border-gray-900'
+                    ? 'bg-[#3E352E] border-[#3E352E] text-white transform scale-105'
+                    : 'bg-white border-gray-100 hover:border-[#3E352E] hover:shadow-xl'
                 }`}
               >
                 {tier.featured && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-gray-900 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                    <span className="bg-[#3E352E] text-white px-4 py-1 rounded-full text-sm font-semibold">
                       Más Popular
                     </span>
                   </div>
@@ -126,12 +186,15 @@ export default function MembresiasPage() {
                   <Icon className="w-12 h-12" />
                 </div>
 
-                <h3 className={`text-2xl font-bold mb-2 ${tier.featured ? 'text-white' : 'text-gray-900'}`}>
+                <h4 className={`text-2xl font-bold mb-2 ${tier.featured ? 'text-white' : 'text-gray-900'}`}>
                   {tier.name}
-                </h3>
+                </h4>
 
                 <p className={`mb-6 ${tier.featured ? 'text-gray-300' : 'text-gray-600'}`}>
                   {tier.description}
+                </p>
+                <p className={`mb-6 text-sm ${tier.featured ? 'text-gray-300' : 'text-gray-600'}`}>
+                  Las membresías no ofrecen descuentos. Otorgan acceso prioritario, servicios plus y Beauty Concierge dedicado.
                 </p>
 
                 <div className="mb-8">
@@ -161,131 +224,142 @@ export default function MembresiasPage() {
                   className={`w-full py-3 rounded-lg font-semibold transition-all ${
                     tier.featured
                       ? 'bg-white text-gray-900 hover:bg-gray-100'
-                      : 'bg-gray-900 text-white hover:bg-gray-800'
+                      : 'bg-[#3E352E] text-white hover:bg-[#3E352E]/90'
                   }`}
                 >
                   Solicitar {tier.name}
                 </button>
-              </div>
+              </article>
             )
           })}
         </div>
+      </section>
 
-        <div id="application-form" className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-            Solicitud de Membresía
-          </h2>
-
+      <section className="testimonials" id="solicitud">
+        <h3>Solicitud de Membresía</h3>
+        <div className="max-w-2xl mx-auto">
           {submitted ? (
-            <div className="p-8 bg-green-50 border border-green-200 rounded-xl">
-              <Award className="w-12 h-12 text-green-900 mb-4" />
-              <h3 className="text-xl font-semibold text-green-900 mb-2">
+            <div className="p-8 bg-green-50 border border-green-200 rounded-xl text-center">
+              <Diamond className="w-12 h-12 text-green-900 mb-4 mx-auto" />
+              <h4 className="text-xl font-semibold text-green-900 mb-2">
                 Solicitud Recibida
-              </h3>
+              </h4>
               <p className="text-green-800">
                 Gracias por tu interés. Nuestro equipo revisará tu solicitud y te
                 contactará pronto para completar el proceso.
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6 p-8 bg-white rounded-2xl shadow-lg border border-gray-100">
-              {selectedTier && (
-                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 mb-6">
+            <form id="application-form" onSubmit={handleSubmit} className="space-y-6 p-8 bg-white rounded-2xl shadow-lg border border-gray-100">
+              {formData.membership_id && (
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 mb-6 text-center">
                   <span className="font-semibold text-gray-900">
-                    Membresía Seleccionada: {tiers.find(t => t.id === selectedTier)?.name}
+                    Membresía Seleccionada: {tiers.find(t => t.id === formData.membership_id)?.name}
                   </span>
                 </div>
               )}
 
-              <div>
-                <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre Completo
-                </label>
-                <input
-                  type="text"
-                  id="nombre"
-                  name="nombre"
-                  value={formData.nombre}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  placeholder="Tu nombre completo"
-                />
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="membership_id" className="block text-sm font-medium text-gray-700 mb-2">
+                    Membresía
+                  </label>
+                  <select
+                    id="membership_id"
+                    name="membership_id"
+                    value={formData.membership_id}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  >
+                    <option value="" disabled>Selecciona una membresía</option>
+                    {tiers.map((tier) => (
+                      <option key={tier.id} value={tier.id}>{tier.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre Completo
+                  </label>
+                  <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    placeholder="Tu nombre completo"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    placeholder="tu@email.com"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-2">
+                    Teléfono
+                  </label>
+                  <input
+                    type="tel"
+                    id="telefono"
+                    name="telefono"
+                    value={formData.telefono}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    placeholder="+52 844 123 4567"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="mensaje" className="block text-sm font-medium text-gray-700 mb-2">
+                    Mensaje (Opcional)
+                  </label>
+                  <textarea
+                    id="mensaje"
+                    name="mensaje"
+                    value={formData.mensaje}
+                    onChange={handleChange}
+                    rows={4}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
+                    placeholder="¿Tienes alguna pregunta específica?"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  placeholder="tu@email.com"
-                />
-              </div>
+              {submitError && (
+                <p className="text-sm text-red-600 text-center">
+                  {submitError}
+                </p>
+              )}
 
-              <div>
-                <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-2">
-                  Teléfono
-                </label>
-                <input
-                  type="tel"
-                  id="telefono"
-                  name="telefono"
-                  value={formData.telefono}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  placeholder="+52 844 123 4567"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="mensaje" className="block text-sm font-medium text-gray-700 mb-2">
-                  Mensaje Adicional (Opcional)
-                </label>
-                <textarea
-                  id="mensaje"
-                  name="mensaje"
-                  value={formData.mensaje}
-                  onChange={handleChange}
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
-                  placeholder="¿Tienes alguna pregunta específica?"
-                />
-              </div>
-
-              <button type="submit" className="btn-primary w-full">
-                Enviar Solicitud
+              <button
+                type="submit"
+                className="bg-[#3E352E] text-white hover:bg-[#3E352E]/90 px-8 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-300 inline-flex items-center justify-center w-full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Enviando...' : 'Enviar Solicitud'}
               </button>
             </form>
           )}
         </div>
-      </div>
-
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-12 max-w-4xl mx-auto">
-        <h3 className="text-2xl font-bold text-white mb-6 text-center">
-          ¿Tienes Preguntas?
-        </h3>
-        <p className="text-gray-300 text-center mb-8 max-w-2xl mx-auto">
-          Nuestro equipo de atención a miembros está disponible para resolver tus dudas
-          y ayudarte a encontrar la membresía perfecta para ti.
-        </p>
-        <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-          <a href="mailto:membresias@anchor23.mx" className="text-white hover:text-gray-200">
-            membresias@anchor23.mx
-          </a>
-          <span className="text-gray-600">|</span>
-          <a href="tel:+528441234567" className="text-white hover:text-gray-200">
-            +52 844 123 4567
-          </a>
-        </div>
-      </div>
-    </div>
+      </section>
+    </>
   )
 }

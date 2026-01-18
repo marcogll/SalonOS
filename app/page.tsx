@@ -1,23 +1,20 @@
+import { AnimatedLogo } from '@/components/animated-logo'
+import { RollingPhrases } from '@/components/rolling-phrases'
+
 /** @description Home page component for the salon website, featuring hero section, services preview, and testimonials. */
 export default function HomePage() {
   return (
     <>
       <section className="hero">
         <div className="hero-content">
-          <div className="logo-mark">
-            <svg viewBox="0 0 100 100" className="w-24 h-24 mx-auto">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="3" />
-              <path d="M 50 20 L 50 80 M 20 50 L 80 50" stroke="currentColor" strokeWidth="3" />
-              <circle cx="50" cy="50" r="10" fill="currentColor" />
-            </svg>
-          </div>
+          <AnimatedLogo />
           <h1>ANCHOR:23</h1>
-          <h2>Belleza anclada en exclusividad</h2>
-          <p>Un estándar exclusivo de lujo y precisión.</p>
+          <h2>Beauty Club</h2>
+          <RollingPhrases />
 
-          <div className="hero-actions">
+          <div className="hero-actions" style={{ animationDelay: '2.5s' }}>
             <a href="/servicios" className="btn-secondary">Ver servicios</a>
-            <a href="https://booking.anchor23.mx" className="btn-primary">Solicitar cita</a>
+              <a href="/booking/servicios" className="bg-[#3E352E] text-white hover:bg-[#3E352E]/90 px-8 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-300 inline-flex items-center justify-center">Solicitar cita</a>
           </div>
         </div>
 

@@ -210,7 +210,7 @@ export default function KioskPage({ params }: { params: { locationId: string } }
                   Confirmar Cita
                 </h3>
                 <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-                  <li>Selecciona "Confirmar Cita"</li>
+                  <li>Selecciona &quot;Confirmar Cita&quot;</li>
                   <li>Ingresa el código de 6 caracteres de tu reserva</li>
                   <li>Verifica los detalles de tu cita</li>
                   <li>Confirma tu llegada</li>
@@ -223,7 +223,7 @@ export default function KioskPage({ params }: { params: { locationId: string } }
                   Reserva Inmediata
                 </h3>
                 <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-                  <li>Selecciona "Reserva Inmediata"</li>
+                  <li>Selecciona &quot;Reserva Inmediata&quot;</li>
                   <li>Elige el servicio que deseas</li>
                   <li>Ingresa tus datos personales</li>
                   <li>Confirma la reserva</li>

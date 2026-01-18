@@ -32,6 +32,13 @@ export default function PerfilPage() {
     }
   }, [user, authLoading, router])
 
+  useEffect(() => {
+    if (!authLoading && user) {
+      loadCustomerProfile()
+      loadCustomerBookings()
+    }
+  }, [user, authLoading])
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[var(--bone-white)] pt-24 flex items-center justify-center">
@@ -45,11 +52,6 @@ export default function PerfilPage() {
   if (!user) {
     return null
   }
-
-  useEffect(() => {
-    loadCustomerProfile()
-    loadCustomerBookings()
-  }, [])
 
   const loadCustomerProfile = async () => {
     try {

@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  anchoros:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: anchoros_app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+    ports:
+      - "3000:3000"
+    networks:
+      - anchoros_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Recursos optimizados
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  nginx:
+    image: nginx:alpine
+    container_name: anchoros_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/ssl/certs:ro
+      - nginx_cache:/var/cache/nginx
+    depends_on:
+      - anchoros
+    networks:
+      - anchoros_network
+    # SSL termination y caching
+    environment:
+      - NGINX_ENVSUBST_TEMPLATE_DIR=/etc/nginx/templates
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx/conf.d
+
+  # Opcional: Redis para caching adicional
+  redis:
+    image: redis:7-alpine
+    container_name: anchoros_redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - anchoros_network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+volumes:
+  redis_data:
+  nginx_cache:
+
+networks:
+  anchoros_network:
+    driver: bridge

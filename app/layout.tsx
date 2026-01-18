@@ -3,6 +3,9 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/lib/auth/context'
 import { AuthGuard } from '@/components/auth-guard'
+import { AppWrapper } from '@/components/app-wrapper'
+import { ResponsiveNav } from '@/components/responsive-nav'
+import { FormbricksProvider } from '@/components/formbricks-provider'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -28,36 +31,15 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className={`${inter.variable} font-sans`}>
-        <AuthProvider>
-          <AuthGuard>
-            {typeof window === 'undefined' && (
-              <header className="site-header">
-                <nav className="nav-primary">
-                  <div className="logo">
-                    <a href="/">ANCHOR:23</a>
-                  </div>
-
-                  <ul className="nav-links">
-                    <li><a href="/">Inicio</a></li>
-                    <li><a href="/historia">Nosotros</a></li>
-                    <li><a href="/servicios">Servicios</a></li>
-                  </ul>
-
-                  <div className="nav-actions flex items-center gap-4">
-                    <a href="/booking/servicios" className="btn-secondary">
-                      Book Now
-                    </a>
-                    <a href="/membresias" className="btn-primary">
-                      Memberships
-                    </a>
-                  </div>
-                </nav>
-              </header>
-            )}
-
-            <main>{children}</main>
-          </AuthGuard>
-        </AuthProvider>
+        <AppWrapper>
+          <FormbricksProvider />
+          <AuthProvider>
+            <AuthGuard>
+              <ResponsiveNav />
+              <main>{children}</main>
+            </AuthGuard>
+          </AuthProvider>
+        </AppWrapper>
 
         <footer className="site-footer">
           <div className="footer-brand">
@@ -68,6 +50,8 @@ export default function RootLayout({
           <div className="footer-links">
             <a href="/historia">Nosotros</a>
             <a href="/servicios">Servicios</a>
+            <a href="/membresias">Membresías</a>
+            <a href="/contacto">Contacto</a>
             <a href="/franchises">Franquicias</a>
           </div>
 

@@ -1,0 +1,28 @@
+# Override para desarrollo local
+version: '3.8'
+
+services:
+  anchoros:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+    ports:
+      - "3000:3000"
+    command: npm run dev
+    networks:
+      - anchoros_network
+
+  # Deshabilitar nginx en desarrollo
+  nginx:
+    profiles:
+      - production
+
+  redis:
+    profiles:
+      - production
