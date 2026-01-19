@@ -436,7 +436,86 @@ El plan completo de 7 fases está documentado en [TASKS.md](TASKS.md) con:
 
 ---
 
-## 12. Deployment y Producción
+## 12. Test Links - Directorio de Páginas y APIs
+
+Para facilitar el testing y navegación del proyecto, hemos creado una página centralizada con enlaces a todas las páginas y endpoints:
+
+**🔗 [Test Links - /testlinks](/testlinks)**
+
+Esta página proporciona:
+
+### Páginas del Proyecto (21 páginas implementadas)
+
+**anchor23.mx - Frontend Institucional:**
+- `/` - Home (Landing page)
+- `/servicios` - Página de servicios
+- `/historia` - Historia y filosofía
+- `/contacto` - Formulario de contacto
+- `/franchises` - Información de franquicias
+- `/membresias` - Membresías (Gold, Black, VIP)
+- `/privacy-policy` - Política de privacidad
+- `/legal` - Términos y condiciones
+
+**booking.anchor23.mx - The Boutique (Frontend de Reservas):**
+- `/booking/servicios` - Selección de servicios
+- `/booking/cita` - Flujo de reserva
+- `/booking/confirmacion` - Confirmación por código
+- `/booking/registro` - Registro de nuevos clientes
+- `/booking/login` - Login de clientes
+- `/booking/perfil` - Perfil de cliente
+- `/booking/mis-citas` - Gestión de citas
+
+**aperture.anchor23.mx - Dashboard Administrativo:**
+- `/aperture/login` - Login de administradores
+- `/aperture` - Dashboard Home (KPIs, Top Performers, Activity Feed)
+- `/aperture/calendar` - Calendario Maestro (drag & drop, filtros, tiempo real)
+
+**Otros:**
+- `/kiosk/[locationId]` - Sistema de autoservicio (reemplazar con UUID)
+- `/hq` - Dashboard administrativo antiguo
+- `/admin/enrollment` - Sistema de enrollment de kioskos
+
+### API Endpoints (40+ endpoints implementados)
+
+**APIs Públicas:**
+- `/api/services` - Listar servicios
+- `/api/locations` - Listar ubicaciones
+- `/api/customers` - Búsqueda y registro de clientes
+- `/api/availability/*` - Sistema de disponibilidad
+- `/api/bookings` - Gestión de reservas
+
+**Kiosk APIs:**
+- `/api/kiosk/authenticate` - Autenticación de kiosk
+- `/api/kiosk/resources/available` - Recursos disponibles
+- `/api/kiosk/bookings` - Crear reservas
+- `/api/kiosk/walkin` - Walk-in bookings
+
+**Aperture APIs:**
+- `/api/aperture/dashboard` - Datos del dashboard
+- `/api/aperture/stats` - Estadísticas generales
+- `/api/aperture/calendar` - Calendario data
+- `/api/aperture/staff/*` - CRUD de staff
+- `/api/aperture/resources/*` - Gestión de recursos
+- `/api/aperture/payroll` - Cálculo de nómina
+- `/api/aperture/pos/*` - Punto de venta y cierre de caja
+
+**FASE 5 - Clientes y Fidelización:**
+- `/api/aperture/clients/*` - CRM completo de clientes
+- `/api/aperture/loyalty/*` - Sistema de puntos y recompensas
+
+**FASE 6 - Pagos y Protección:**
+- `/api/webhooks/stripe` - Webhooks de Stripe
+- `/api/cron/reset-invitations` - Reseteo semanal de invitaciones
+- `/api/cron/detect-no-shows` - Detección de no-shows
+- `/api/aperture/bookings/check-in` - Check-in de clientes
+- `/api/aperture/bookings/no-show` - Penalización de no-shows
+- `/api/aperture/finance/*` - Finanzas y reportes
+
+**Guía completa de APIs:** Ver [API.md](./docs/API.md) para documentación detallada de todos los endpoints.
+
+---
+
+## 13. Deployment y Producción
 
 ### Requisitos para Producción
 - VPS o cloud provider (Vercel recomendado para Next.js)
@@ -476,7 +555,7 @@ GOOGLE_CALENDAR_ID=
 
 ---
 
-## 12. anchor23.mx - Frontend Institucional
+## 14. anchor23.mx - Frontend Institucional
 
 Dominio institucional. Contenido estático, marca, narrativa y conversión inicial.
 
@@ -661,7 +740,7 @@ Ver documentación completa en `API.md` para todos los endpoints disponibles.
 
 ---
 
-## 13. Sistema de Kiosko
+## 15. Sistema de Kiosko
 
 El sistema de kiosko permite a los clientes interactuar con el salón mediante pantallas táctiles en la entrada.
 
@@ -686,7 +765,7 @@ https://kiosk.anchor23.mx/{location-id}
 
 ---
 
-## 14. Filosofía Operativa
+## 16. Filosofía Operativa
 
 AnchorOS no busca volumen.
 
@@ -696,7 +775,7 @@ Este repositorio implementa esa filosofía a nivel de sistema.
 
 ---
 
-## 15. Codename: Adela
+## 17. Codename: Adela
 
 AnchorOS se conoce internamente como **Adela**, un acrónimo que representa los pilares fundamentales del sistema:
 
