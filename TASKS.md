@@ -298,9 +298,9 @@ Tareas:
 
 ---
 
-## FASE 3 — Pagos y Protección (PENDIENTE)
+ ## FASE 3 — Pagos y Protección ✅ COMPLETADA
 
-### 3.1 Stripe — Depósitos Dinámicos ⏳
+### 3.1 Stripe — Depósitos Dinámicos ✅
 * Regla $200 vs 50% según día.
 * Asociación pago ↔ booking (UUID interno, Short ID visible).
 * Webhooks para:
@@ -311,13 +311,13 @@ Tareas:
 * Función de cálculo de depósito.
 
 **Output:**
-* ⏳ Webhooks Stripe.
-* ⏳ Validación de pagos.
-* ⏳ Función de cálculo de depósito.
+* ✅ Webhooks Stripe.
+* ✅ Validación de pagos.
+* ✅ Función de cálculo de depósito.
 
 ---
 
-### 3.2 No-Show Logic ⏳
+### 3.2 No-Show Logic ✅
 * Ventana de cancelación 12h (UTC).
 * Penalización automática:
 * Marcar booking como `no_show`
@@ -328,7 +328,7 @@ Tareas:
 * ⏳ Notificaciones por email/SMS.
 
 **Output:**
-* ⏳ Función de penalización.
+* ✅ Función de penalización.
 * ⏳ Notificaciones por email/SMS.
 
 ---
@@ -520,8 +520,6 @@ Tareas:
 
 ---
 
-## FASE 7 — Automatización y Lanzamiento (PENDIENTE)
-
 ### 7.1 Notificaciones ⏳
 * Confirmaciones por WhatsApp.
 * Recordatorios de citas:
@@ -640,6 +638,74 @@ Tareas:
 
 ---
 
+ ## CORRECCIONES RECIENTES ✅
+
+### Corrección de Calendario (Enero 18, 2026) ✅
+**Problema:**
+- Calendario mostraba días desalineados con días de la semana
+- Enero 1, 2026 aparecía como Lunes en lugar de Jueves
+- Grid del DatePicker no calculaba offset del primer día del mes
+
+**Solución:**
+- Agregar cálculo de offset usando getDay() del primer día del mes
+- Ajustar para semana que empieza en Lunes: offset = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+- Agregar celdas vacías al inicio para padding correcto
+- Para Enero 2026: Jueves (getDay=4) → offset=3 (3 celdas vacías antes del día 1)
+
+**Archivos:**
+- `components/booking/date-picker.tsx` - Cálculo de offset y padding cells
+
+**Commits:**
+- `dbac763` - fix: Correct calendar day offset in DatePicker component
+
+---
+
+### Corrección de Horarios de Negocio (Enero 18, 2026) ✅
+**Problema:**
+- Sistema de disponibilidad solo mostraba horarios 22:00-23:00
+- Horarios de negocio (business_hours) configurados incorrectamente
+- Función get_detailed_availability tenía problemas de timezone conversion
+
+**Soluciones:**
+
+1. **Migración de Horarios por Defecto:**
+   - Actualizar business_hours a horarios normales del salón
+   - Lunes a Viernes: 10:00-19:00
+   - Sábado: 10:00-18:00
+   - Domingo: Cerrado
+
+2. **Mejora de Función de Disponibilidad:**
+   - Reescribir get_detailed_availability con make_timestamp()
+   - Eliminar concatenación de strings para construcción de timestamps
+   - Manejo correcto de timezone con AT TIME ZONE
+   - Mejorar NULL handling para business_hours y is_available_for_booking
+
+**Archivos:**
+- `supabase/migrations/20260118080000_fix_business_hours_default.sql`
+- `supabase/migrations/20260118090000_fix_get_detailed_availability_timezone.sql`
+
+**Commits:**
+- `35d5cd0` - fix: Correct calendar offset and fix business hours showing only 22:00-23:00
+
+---
+
+### Página de Test Links (Enero 18, 2026) ✅
+**Nueva Funcionalidad:**
+- Página centralizada `/testlinks` con directorio completo del proyecto
+- 21 páginas implementadas agrupadas por dominio
+- 40+ API endpoints documentados con indicadores de método
+- Badges de color para identificar FASE5 y FASE 6
+- Diseño responsive con grid layout y efectos hover
+
+**Archivos:**
+- `app/testlinks/page.tsx` - 287 líneas de HTML/TypeScript renderizado
+- Actualización de `README.md` con nueva sección 12: Test Links
+
+**Commits:**
+- `09180ff` - feat: Add testlinks page and update README with directory
+
+---
+
 ## PRÓXIMAS TAREAS PRIORITARIAS
 
 ### 🔴 CRÍTICO - Bloquea Funcionamiento (Timeline: 1-2 días)
@@ -673,21 +739,21 @@ Tareas:
     -H "Authorization: Bearer YOUR_CRON_SECRET"
   ```
 
-### 🟡 ALTA - Documentación y Diseño (Timeline: 1 semana)
+ ### 🟡 ALTA - Documentación y Diseño (Timeline: 1 semana)
 
-4. **Actualizar documentación con especificaciones técnicas completas** - ~4 horas
+4. ✅ **Actualizar documentación con especificaciones técnicas completas** - COMPLETADO
    - Crear documento de especificaciones técnicas (`docs/APERATURE_SPECS.md`)
    - Documentar respuesta a horas trabajadas (automático desde bookings)
    - Definir estructura de POS completa
    - Documentar sistema de múltiples cajeros
 
-5. **Actualizar APERTURE_SQUARE_UI.md con Radix UI** - ~1.5 horas
+5. ✅ **Actualizar APERTURE_SQUARE_UI.md con Radix UI** - COMPLETADO
    - Agregar sección "Stack Técnico"
    - Documentar componentes Radix UI específicos
    - Ejemplos de uso de Radix con estilizado Square UI
    - Guía de accesibilidad Radix (ARIA attributes, keyboard navigation)
 
-6. **Actualizar API.md con rutas implementadas** - ~1 hora
+6. ✅ **Actualizar API.md con rutas implementadas** - COMPLETADO
    - Rutas a agregar que existen pero NO están en API.md:
      - `GET /api/availability/blocks`
      - `GET /api/public/availability`
