@@ -50,24 +50,26 @@ Este proyecto se rige por los siguientes documentos:
 * **[README.md](./README.md)** (este archivo) → Guía técnica y operativa del repo.
 * **[TASKS.md](./TASKS.md)** → Plan de ejecución por fases y estado actual.
 
-### Documentación Especializada (docs/)
-* **[docs/PRD.md](./docs/PRD.md)** → Definición de producto y reglas de negocio.
-* **[docs/API.md](./docs/API.md)** → Documentación completa de APIs y endpoints.
-* **[docs/STRIPE_SETUP.md](./docs/STRIPE_SETUP.md)** → Guía de integración de pagos con Stripe.
-* **[docs/site_requirements.md](./docs/site_requirements.md)** → Requisitos técnicos del proyecto.
-* **[docs/ANCHOR23_FRONTEND.md](./docs/ANCHOR23_FRONTEND.md)** → Documentación del frontend institucional.
-* **[docs/APERTURE_SQUARE_UI.md](./docs/APERTURE_SQUARE_UI.md)** → Guía de estilo Square UI para Aperture (HQ Dashboard).
-* **[docs/DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md)** → Sistema de diseño completo para AnchorOS.
-* **[docs/DOMAIN_CONFIGURATION.md](./docs/DOMAIN_CONFIGURATION.md)** → Configuración de dominios y subdominios.
-* **[docs/KIOSK_SYSTEM.md](./docs/KIOSK_SYSTEM.md)** → Documentación completa del sistema de kiosko.
-* **[docs/KIOSK_IMPLEMENTATION.md](./docs/KIOSK_IMPLEMENTATION.md)** → Guía rápida de implementación del kiosko.
-* **[docs/ENROLLMENT_SYSTEM.md](./docs/ENROLLMENT_SYSTEM.md)** → Sistema de enrollment de kioskos.
-* **[docs/RESOURCES_UPDATE.md](./docs/RESOURCES_UPDATE.md)** → Documentación de actualización de recursos.
-* **[docs/OPERATIONAL_PROCEDURES.md](./docs/OPERATIONAL_PROCEDURES.md)** → Procedimientos operativos.
-* **[docs/STAFF_TRAINING.md](./docs/STAFF_TRAINING.md)** → Guía de capacitación del staff.
-* **[docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)** → Guía de solución de problemas.
-* **[docs/CLIENT_ONBOARDING.md](./docs/CLIENT_ONBOARDING.md)** → Proceso de onboarding de clientes.
-* **[docs/PROJECT_UPDATE_JAN_2026.md](./docs/PROJECT_UPDATE_JAN_2026.md)** → Actualizaciones del proyecto Enero 2026.
+ ### Documentación Especializada (docs/)
+ * **[docs/PRD.md](./docs/PRD.md)** → Definición de producto y reglas de negocio.
+ * **[docs/API.md](./docs/API.md)** → Documentación completa de APIs y endpoints.
+ * **[docs/STRIPE_SETUP.md](./docs/STRIPE_SETUP.md)** → Guía de integración de pagos con Stripe.
+ * **[docs/site_requirements.md](./docs/site_requirements.md)** → Requisitos técnicos del proyecto.
+ * **[docs/ANCHOR23_FRONTEND.md](./docs/ANCHOR23_FRONTEND.md)** → Documentación del frontend institucional.
+ * **[docs/APERTURE_SQUARE_UI.md](./docs/APERTURE_SQUARE_UI.md)** → Guía de estilo Square UI para Aperture (HQ Dashboard).
+ * **[docs/APERTURE_SPECS.md](./docs/APERTURE_SPECS.md)** → Especificaciones técnicas completas de Aperture.
+ * **[docs/DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md)** → Sistema de diseño completo para AnchorOS.
+ * **[docs/DOMAIN_CONFIGURATION.md](./docs/DOMAIN_CONFIGURATION.md)** → Configuración de dominios y subdominios.
+ * **[docs/KIOSK_SYSTEM.md](./docs/KIOSK_SYSTEM.md)** → Documentación completa del sistema de kiosko.
+ * **[docs/KIOSK_IMPLEMENTATION.md](./docs/KIOSK_IMPLEMENTATION.md)** → Guía rápida de implementación del kiosko.
+ * **[docs/ENROLLMENT_SYSTEM.md](./docs/ENROLLMENT_SYSTEM.md)** → Sistema de enrollment de kioskos.
+ * **[docs/RESOURCES_UPDATE.md](./docs/RESOURCES_UPDATE.md)** → Documentación de actualización de recursos.
+ * **[docs/OPERATIONAL_PROCEDURES.md](./docs/OPERATIONAL_PROCEDURES.md)** → Procedimientos operativos.
+ * **[docs/STAFF_TRAINING.md](./docs/STAFF_TRAINING.md)** → Guía de capacitación del staff.
+ * **[docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)** → Guía de solución de problemas.
+ * **[docs/CLIENT_ONBOARDING.md](./docs/CLIENT_ONBOARDING.md)** → Proceso de onboarding de clientes.
+ * **[docs/PROJECT_UPDATE_JAN_2026.md](./docs/PROJECT_UPDATE_JAN_2026.md)** → Actualizaciones del proyecto Enero 2026.
+ * **[docs/RECENT_FIXES_JAN_2026.md](./docs/RECENT_FIXES_JAN_2026.md)** → Correcciones recientes de calendario, horarios y disponibilidad.
 
 El PRD es la fuente de verdad funcional. El README es la guía de ejecución.
 
@@ -339,18 +341,24 @@ El sitio estará disponible en **http://localhost:2311**
 
  ### Correcciones Recientes ✅ (Enero 2026)
   - ✅ **Calendario Booking - Desfase de Días**: Corrección del DatePicker para alinear correctamente los días de la semana
-    - Enero 1, 2026 ahora se muestra correctamente como Jueves (en lugar de Lunes)
-    - Se agregó cálculo de offset para el primer día del mes
-    - Se agregan celdas de padding vacías para alineación correcta
-  - ✅ **Horarios Disponibles - Solo 22:00-23:00**: Corrección de business hours y timezone en disponibilidad
-    - Se actualizaron horarios por defecto a horarios normales del salón (10:00-19:00)
-    - Se mejoró la función get_detailed_availability con manejo correcto de timezone
-    - Se usa make_timestamp() en lugar de concatenación de strings para conversión de fechas
-  - ✅ **Cliente Supabase Mejorado**: Inicialización lazy con validación de variables de entorno
-  - ✅ **APIs con Diagnóstico Avanzado**: Logging detallado en `/api/services` y `/api/locations`
-  - ✅ **Compatibilidad Node.js**: Actualización a Node 20 para compatibilidad con Supabase
-  - ✅ **Solución "fetch failed"**: Corrección del error de conectividad con Supabase en producción
-  - ✅ **Dockerfile Optimizado**: Imagen de producción con Node 20 y configuraciones mejoradas
+    - Enero 1, 2026 ahora se muestra correctamente como Jueves
+    - Se agregó cálculo de offset y celdas de padding
+    - Commit: `dbac763`
+  - ✅ **Horarios Disponibles - Solo 22:00-23:00**: Corrección de business hours y timezone
+    - Ahora muestra horarios normales del salón (10:00-19:00)
+    - Se mejoró la función get_detailed_availability con make_timestamp()
+    - Migraciones: 20260118080000, 20260118090000
+    - Commit: `35d5cd0`
+  - ✅ **Página de Test Links**: Directorio centralizado de todas las páginas y APIs
+    - 21 páginas implementadas agrupadas por dominio
+    - 40+ API endpoints documentados con indicadores
+    - Diseño responsive con grid layout y efectos hover
+    - Commit: `09180ff`
+  - ✅ **Documentación de Correcciones**: Documento completo con detalles técnicos
+    - docs/RECENT_FIXES_JAN_2026.md con análisis de problemas y soluciones
+    - Ejemplos de código antes/después
+    - Validación y testing notes
+    - Commit: `88ea79f`
   - ✅ **Test Links Page**: Página centralizada con enlaces a todas las páginas y APIs del proyecto
 
  ### Fase Actual
