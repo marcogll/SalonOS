@@ -119,3 +119,16 @@ AnchorOS es un sistema operativo para salones de belleza orientado a agenda, pag
 ## 9. Estado del Documento
 
 Este PRD es la fuente única de verdad funcional del sistema AnchorOS.
+
+## 10. Tasks
+
+- [x] Configurar estructura del proyecto con timestamps UTC en backend
+- [ ] Implementar UUID como claves primarias para todas las entidades
+- [ ] Agregar generación de Short ID con verificación de unicidad
+- [ ] Crear control de acceso basado en roles (Admin, Manager, Staff, Artist, Customer)
+- [ ] Implementar manejo de zonas horarias (UTC en backend, local en frontend)
+- [ ] Construir sistema de bookings con funcionalidad de agenda
+- [ ] Integrar pagos con Stripe usando short ID como referencia
+- [ ] Agregar logging de auditoría para acciones automáticas
+- [ ] Crear niveles de membresía (Free, Gold) con beneficios
+- [ ] Implementar sistema de invitaciones para tier Gold (5 semanales, reseteables)
