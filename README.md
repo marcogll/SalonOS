@@ -258,7 +258,16 @@ El sitio estará disponible en **http://localhost:2311**
 
 ---
 
-## 10. Estado del Proyecto
+ ## 10. Estado del Proyecto
+
+### Progreso General
+- **FASE 1**: 100% ✅ Completada
+- **FASE 2**: 100% ✅ Completada
+- **FASE 3**: 100% ✅ Completada
+- **FASE 4**: 95% ✅ En Progreso
+- **FASE 5**: 100% ✅ Completada
+- **FASE 6**: 100% ✅ Completada
+- **FASE 7**: 5% ⏳ Pendiente
 
 ### Completado ✅
 - ✅ Esquema de base de datos completo
@@ -314,27 +323,35 @@ El sitio estará disponible en **http://localhost:2311**
    - ✅ Autenticación completa con middleware de protección
    - ✅ Comentarios auditables en todo el código
    - ⏳ Sistema de nómina y comisiones (próxima semana)
-   - ⏳ POS completo con múltiples métodos de pago
-   - ⏳ CRM avanzado con fidelización
+    - ✅ POS completo con múltiples métodos de pago
+    - ✅ CRM avanzado con fidelización
 
 - 🚧 Lógica de no-show y penalizaciones automáticas
 - 🚧 Integración con Google Calendar (20% - en progreso)
 
-### Pendiente ⏳
-- ⏳ Implementar API pública (api.anchor23.mx)
-- ⏳ Completar Aperture con estilo Square UI (calendario multi-columna, páginas individuales, The Vault)
+ ### Pendiente ⏳
+- ⏳ The Vault (storage de fotos privadas VIP/Black/Gold)
 - ⏳ Notificaciones por WhatsApp
 - ⏳ Recibos digitales por email
 - ⏳ Landing page para believers (booking público)
 - ⏳ Tests unitarios
- - ⏳ Archivos SEO (robots.txt, sitemap.xml)
+  - ⏳ Archivos SEO (robots.txt, sitemap.xml)
 
  ### Correcciones Recientes ✅ (Enero 2026)
- - ✅ **Cliente Supabase Mejorado**: Inicialización lazy con validación de variables de entorno
- - ✅ **APIs con Diagnóstico Avanzado**: Logging detallado en `/api/services` y `/api/locations`
- - ✅ **Compatibilidad Node.js**: Actualización a Node 20 para compatibilidad con Supabase
- - ✅ **Solución "fetch failed"**: Corrección del error de conectividad con Supabase en producción
- - ✅ **Dockerfile Optimizado**: Imagen de producción con Node 20 y configuraciones mejoradas
+  - ✅ **Calendario Booking - Desfase de Días**: Corrección del DatePicker para alinear correctamente los días de la semana
+    - Enero 1, 2026 ahora se muestra correctamente como Jueves (en lugar de Lunes)
+    - Se agregó cálculo de offset para el primer día del mes
+    - Se agregan celdas de padding vacías para alineación correcta
+  - ✅ **Horarios Disponibles - Solo 22:00-23:00**: Corrección de business hours y timezone en disponibilidad
+    - Se actualizaron horarios por defecto a horarios normales del salón (10:00-19:00)
+    - Se mejoró la función get_detailed_availability con manejo correcto de timezone
+    - Se usa make_timestamp() en lugar de concatenación de strings para conversión de fechas
+  - ✅ **Cliente Supabase Mejorado**: Inicialización lazy con validación de variables de entorno
+  - ✅ **APIs con Diagnóstico Avanzado**: Logging detallado en `/api/services` y `/api/locations`
+  - ✅ **Compatibilidad Node.js**: Actualización a Node 20 para compatibilidad con Supabase
+  - ✅ **Solución "fetch failed"**: Corrección del error de conectividad con Supabase en producción
+  - ✅ **Dockerfile Optimizado**: Imagen de producción con Node 20 y configuraciones mejoradas
+  - ✅ **Test Links Page**: Página centralizada con enlaces a todas las páginas y APIs del proyecto
 
  ### Fase Actual
 **Fase 1 — Cimientos y CRM**: 100% completado
@@ -355,9 +372,10 @@ El sitio estará disponible en **http://localhost:2311**
 - Integración Calendar: 20% (en progreso)
 - Aperture Backend: 100%
 
-**Fase 3 — Pagos y Protección**: 70% completado
+ **Fase 3 — Pagos y Protección**: 100% ✅ COMPLETADA
 - Stripe depósitos dinámicos: 100%
-- No-show logic: 40% (lógica implementada, automatización pendiente)
+- No-show logic: 100% (detección automática, penalización, check-in)
+- Webhooks Stripe: 100% (payment_intent.succeeded, payment_failed, charge.refunded)
 
 **Fase 4 — HQ Dashboard (APERTURE)**: 95% ✅ EN PROGRESO
 - ✅ Dashboard Home (KPI Cards, Top Performers, Activity Feed completos)
@@ -366,12 +384,26 @@ El sitio estará disponible en **http://localhost:2311**
 - ✅ Gestión de Recursos (CRUD con disponibilidad en tiempo real)
 - ✅ Autenticación completa con middleware de protección
 - ✅ Comentarios auditables en todo el código (80+ archivos)
-- ⏳ Nómina y comisiones (próxima semana)
+    - ✅ Nómina y comisiones (implementado con cálculos automáticos)
 - ⏳ POS completo con múltiples métodos de pago
 - ⏳ CRM avanzado con fidelización
-- Pendiente implementación completa
+    - ✅ CRM avanzado con fidelización completo
+    - ✅ Finanzas y reportes implementados
+    - ⏳ The Vault (storage de fotos privadas) - PENDIENTE
 
-**Fase 5 — Automatización y Lanzamiento**: 5% completado
+**Fase 5 — Clientes y Fidelización**: 100% ✅ COMPLETADA
+- ✅ Client Management (CRM) con búsqueda fonética
+- ✅ Sistema de Lealtad con puntos y expiración
+- ✅ Membresías (Gold, Black, VIP) con beneficios
+- ✅ Galería de fotos restringida por tier
+
+**Fase 6 — Pagos y Protección**: 100% ✅ COMPLETADA
+- ✅ Stripe Webhooks (payment_intent.succeeded, payment_failed, charge.refunded)
+- ✅ No-Show Logic con detección automática y penalización
+- ✅ Finanzas y Reportes (expenses, daily closing, staff performance)
+- ✅ Check-in de clientes
+
+**Fase 7 — Automatización y Lanzamiento**: 5% ⏳ PENDIENTE
 - Notificaciones WhatsApp: 0% (variables configuradas, no implementado)
 - Recibos digitales: 0% (pendiente)
 - Landing page Believers: 0% (pendiente)
